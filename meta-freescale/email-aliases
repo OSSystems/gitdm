@@ -1,5 +1,7 @@
 # Some developers use multiple email aliases; here we try to turn them
 # into a canonical form.
+aalonso00@gmail.com aalonso@freescale.com
+aalonso@devbox.(none) aalonso@freescale.com
 kees@ubuntu.com kees@outflux.net
 aaro.koskinen@iki.fi aaro.koskinen@nokia.com
 zaitcev@yahoo.com zaitcev@kotori.zaitcev.us
