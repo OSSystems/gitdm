@@ -1,0 +1,494 @@
+#
+# Special catch for unknown Linaro folks.  I don't want to put
+# in *@linaro.org because we'd really rather trace them back to
+# the real mothership whenever possible.
+#
+dave.martin@linaro.org	Linaro
+
+21cnbao@gmail.com	Analog Devices	# Barry Song
+abelyako@googlemail.com	Intel		# Alexander Belyakov
+abelyako@mail.ru	Intel		# Alexander Belyakov
+acassis@gmail.com	MaxTrack Industria	# Alan Carvalho de Assis
+acme@infradead.org	Red Hat		# acme
+adi@drcomp.erfurt.thur.de	Eleven Musicproduction	# Adrian Knoth
+adobriyan@gmail.com	Parallels		# Dobriyan
+aeh@db.org		Creytiv.com		# Alfred E. Heggestad
+agl@imperialviolet.org	Google		# Adam Langley
+ajax@benzedrine.nwnk.net	Red Hat	# Ajax
+ajax@nwnk.net		Red Hat		# Ajax
+akorolev@infradead.org	Intel		# Alexey Korolev
+akpm@linux-foundation.org	Google
+akpm@linux-foundation.org	Linux Foundation < 2006-08-01
+alain@knaff.lu		SES ASTRA TechCom	# Alain Knaff
+al@alarsen.net		REA Systems GmbH	# Anders Larsen
+alanh@fairlite.demon.co.uk	Tungsten Graphics
+alan@lxorguk.ukuu.org.uk	Intel # Alan Cox
+alan@lxorguk.ukuu.org.uk  Red Hat < 2009-01-15  # Exact date a guess
+albcamus@gmail.com	Sun			# Jike Song
+albcamus@gmail.com	Wind River < 2008-06-01	# Jike Song
+alex@botch2.com		AMD
+alex@botch2.(none)	AMD
+alex@csgraf.de		Novell			# Alexander Graf
+alexdeucher@gmail.com	AMD   			# Alex Deucher, 11/2007
+alex@flawedcode.org	SICE S.A. - ACS Dragados	# Alejandro Martinez Ruiz
+alexneblett01@yahoo.com	IAN Investments	# Alex Neblett
+amir73il@gmail.com	CTERA Networks
+amitshah@gmx.net	Qumranet		# Amit Shah
+amnonaar@gmail.com	(Unknown)
+andersk@mit.edu		Ksplice, Inc.
+andi@firstfloor.org	Intel			# Andi Kleen
+andi@firstfloor.org	Novell < 2008-03-14	# Andi Kleen
+andre.goddard@gmail.com	LG Electronics		# Andre Goddard Rosa
+andy@greyhouse.net	Red Hat		# Andy Gospodarek
+andy@netfall.com	Onstor			# Andrew Sharp
+andy.shevchenko@gmail.com	Teleca
+andy@warmcat.com	Crash Barrier		# Andy Green
+anholt@freebsd.org	Intel		# xorg developer
+anisse@astier.eu	(Consultant) < 2010-03-01	# Anisse Astier
+anisse@astier.eu	Substantiel
+apw@shadowen.org	IBM			# Andy Whitcroft
+a.p.zijlstra@chello.nl	Red Hat	# Peter Zijlstra
+aquynh@gmail.com	National Institute of Advanced Industrial Science and Technology	# Nguyen Anh Quynh
+aradford@gmail.com	LSI Logic   		# Adam Radford
+aris@cathedrallabs.org	Red Hat	# Aristeu Rozanski
+aris@ruivo.org	Red Hat		# Aristeu Rozanski
+aristeu.sergio@gmail.com	Red Hat	# Aristeu Rozanski
+arjan@infradead.org	Intel			# Arjan
+armbru@pond.sub.org	Red Hat		# Markus Armbruster
+arnd@arndb.de	IBM				# Arnd
+arne.luehrs@googlemail.com	HP		# Arne Luehrs
+arno@natisbad.org	EADS			# Arnaud Ebalard
+arun.edarath@gmail.com		Samsung		# arun c
+ashutosh.naik@gmail.com	Chelsio Communications	# Ashutosh Naik
+ashwin.ganti@gmail.com	Google		# Ashwin Ganti
+at.wufei@gmail.com	(Unknown)
+aurelien@sitadelle.com	Neuf Cegetel		# Aurelien Nephtali
+aviv.laufer@gmail.com	NotalVision		# Aviv Laufer
+avtobiff@gmail.com	(Unknown)
+axboe@kernel.dk		Fusion-IO		# Jens Axboe
+axboe@kernel.dk		Oracle	< 2010-06-01
+axel.lin@gmail.com	MiTAC   # old posts + linkedin
+bbeare1@gmail.com	Intel		# Bruce Beare
+bbyer@bbyer.local	Apple
+beckyb@kernel.crashing.org Freescale	# Becky Bruce
+benh@kernel.crashing.org	IBM		# Ben H.
+ben@bwidawsk.net	Intel		# Ben Widawsky (linkedin)
+bernds_cb1@t-online.de	Analog Devices		# Bernd Schmidt
+bfields@fieldses.org	University of Michigan	# J. Bruce Fields
+bhaskie@gmail.com	GlobalLogic		# Bhaskar Dutta
+blogic@openwrt.org	Fon			# John Crispin
+brandon@ifup.org	Novell			# Brandon Philips
+brgerst@gmail.com	Infor < 2009-02-01  # from linkedin page
+brgerst@gmail.com	(None)
+brian@bristyle.com	Calit2			# Brian Braunstein
+briglia.anderson@gmail.com	Nokia		# Anderson Briglia
+bruno.braga@gmail.com	Brastel Telecom	# Bruno Braga
+buytenh@wantstofly.org	Marvell			# Lennert Buytenhek
+c99drn@cs.umu.se	Novell
+caglar@pardus.org.tr	Pardus
+carmelo73@gmail.com	ST Microelectronics	# Carmelo Amoroso
+chainsaw@gentoo.org	London Internet Exchange	# Tony Vroon
+charlieb@budge.apana.org.au	Mitel Networks Corporation	# Charlie Brady
+chas@cmf.nrl.navy.mil	ITT Industries		# chas williams
+chombourger@gmail.com	MontaVista		# Cedric Hombourger
+chris@arachsys.com	ElasticHosts Ltd.	# Chris Webb
+chris@chris-wilson.co.uk	Intel
+chris@chris-wilson.co.uk	(None) < 2009-08-24	# Chris Wilson
+chris@csamuel.org	VPAC			# Chris Samuel
+chrisw@sous-sol.org	Red Hat		# Chris Wright
+chris@zankel.net	Tensilica			# Chris Zankel
+cmatsuoka@gmail.com	Mandriva			# Claudio Matsuoka
+computersforpeace@gmail.com	Broadcom	# Brian Norris
+cooloney@kernel.org	Analog Devices		# Bryan Wu
+corey@mutternet.com	Broadcom			# Corey Mutter
+cqiuping@gmail.com	Intel		# Qiuping Chen
+cworth@cworth.org	Intel
+cworth@cworth.org	Red Hat	< 2008-07-01
+czoccolo@gmail.com	ISTI-CNR		# Corrado Zoccolo
+dacker@roinet.com	Rajant			# David Acker
+dahlmann.thomas@arcor.de	IAV Products GmbH	# Thomas Dahlmann
+dale@farnsworth.org	MontaVista		# Dale Farnsworth
+damir@mimas.ru		Magenta Development	#
+damm@igel.co.jp	Renesas Electronics		# Magnus Damm
+damm@opensource.se	OpenSource AB		# Magnus Damm
+dan.j.rosenberg@gmail.com Virtual Security Research	# Dan Rosenberg
+dannf@dannf.org			HP		# dann frazier
+dared1st@yahoo.com	Phoenix Technologies	# Aleksey Gorelov
+davej@codemonkey.org.uk	Red Hat		# Dave Jones
+dave@jikos.cz	Novell				# David Sterba
+davem@davemloft.net	Red Hat		# Dave Miller
+david@santinoli.com	Fastpath Research	# David Santinoli
+da-x@monatomic.org	XIV Information Systems	# Dan Aloni
+dean@arctic.org	Google		# dean gaudet
+deathsimple@vodaphone.de	AMD	# Christian König 
+dedekind@infradead.org	Nokia			# Artem Bityutskiy
+dheitmueller@linuxtv.org GridApp Systems    # devinheitmueller.com
+diego@woitasen.com.ar	XTECH			# Diego Woitasen
+dilinger@queued.net	OLPC			# Andres Salomon
+dixlor@gmail.com	SRI Quant		# Pavel
+don.mullis@gmail.com	Amazon		# Don Mullis (Lab126)
+dorfman.eli@gmail.com	Voltaire		# Eli Dorfman
+dougthompson@xmission.com	Lawrence Livermore National Laboratory # Doug Thompson
+drow@false.org	CodeSourcery			# Daniel Jacobowitz
+ds@schleef.org		Entropy Wave
+dth@dth.net	Bitsource				# Danny ter Haar
+dwm@enoyolf.org	IBM			# Doug Maxey
+dwm@meer.net	ZING Systems			# Don Mullis
+ebenard@free.fr		Eukrea Electromatique	# Eric Benard
+ebs@ebshome.net	Stream Processors		# Eugene Surovegin
+edward.shishkin@gmail.com	Red Hat	# Edward Shishkin
+elpa.rizzo@gmail.com	ELPA			# Davide Rizzo
+eranian@googlemail.com	Google		# stephane eranian
+eric@anholt.net	Intel			# Eric Anholt
+eric.dumazet@gmail.com	Societe Francaise de Radiotelephone	# Eric Dumazet
+eric@lammerts.org	Observision		# Eric Lammerts
+eric.y.miao@gmail.com	Marvell			# Eric Miao
+erik.andren@gmail.com	Xelerated AB
+eschwab@online.de	GiK mbH		# Ernst Schwab
+eugeneteo@kernel.sg	Red Hat		# Eugene Teo
+fdiakh@gmail.com	CEA		# François Diakhate
+fmalita@gmail.com	IPUnity-Glenayre		# Florin Malita
+fmhess@speakeasy.net	NIST			# Frank Mori Hess
+forest@alittletooquiet.net	Logic Supply
+frank@f-seidel.de	Sphairon Access Systems GmbH	# Frank Seidel
+gardner.ben@gmail.com	Wabtec Railway Electronics	# Ben Gardner
+garzik.org		Red Hat
+gavron@wetwork.net	Login Tucson Colocation Datacenter
+gclement00@gmail.com	Adeneo			# Gregory CLEMENT
+geoff@geoffthorpe.net	Freescale		# Geoff Thorpe
+gernot@hillier.de	Siemens			# Gernot Hillier
+gitster@pobox.com	Twin Sun		# Junio C Hamano
+gl@dsa-ac.de	DSA				# Guennadi Liakhovetski
+gnurou@gmail.com	NVidia	# Alexandre Courbot via linkedin
+gorcunov@gmail.com	(None) < 2009-01-01
+gorcunov@gmail.com	Parallels
+graff.yang@gmail.com	Analog Devices		# graff yang
+green@linuxhacker.ru	Sun			# Oleg Drokin
+greg@kroah.com		SUSE < 2012-02-01
+greg@kroah.com		Linux Foundation
+gregoire@gentil.com	Zonbu
+gwingerde@gmail.com	Acision			# Gertjan van Wingerde
+hadess@hadess.net	Red Hat		# Bastien Nocera
+hamish@cloud.net.au	Calyptech Pty Ltd	# Hamish Moffatt
+haojian.zhuang@gmail.com	Marvell	# Haojian Zhuang
+haokexin@gmail.com	Wind River			# Kevin Hao
+heiko.schocher@invitel.hu	DENX GmbH		# Heiko Schocher
+henk.stegeman@gmail.com	Quantum Controls BV	# Henk Stegeman
+herrmann.der.user@googlemail.com	AMD	# Andreas Herrmann
+h.feurstein@gmail.com	Contec Steuerungstechnik & Automation	# Hubert Feurstein
+hgl.tools@gmail.com	Intel		# H.J. Lu
+h.mitake@gmail.com	Cluster Computing	# Hitoshi Mitake
+hohndel@infradead.org	Intel		# Dirk Hohndel
+horms@verge.net.au	VA Linux Systems Japan	# Horms
+hpa@zytor.com	Intel
+hpa@zytor.com	(None) < 2009-01-01 # approx
+hpa@zytor.com	rPath < 2008-10-20
+hrogge@googlemail.com	FGAN			# Henning Rogge
+htejun@gmail.com	Novell			# Tejun
+htmldeveloper@gmail.com	DSO National Laboratories	# Peter Teoh
+hugh@blemings.org	IBM			# Hugh Blemings
+hughsient@gmail.com	Red Hat		# Richard Hughes
+hugo@hugovil.com	Lyrtech			# Hugo Villeneuve
+ihar.hrachyshka@gmail.com	EPAM Systems	# Ihar Hrachyshka
+ijc@hellion.org.uk	Citrix			# Ian Campbell
+imirkin@alum.mit.edu	Yext
+ishikawa@hanzubon.jp	OSDN			# ISHIKAWA Mutsumi
+isloginov@gmail.com	NIISI RAS	# Ilya Loginov
+jacmet@sunsite.dk	Barco			# Peter Korsgaard
+james.bottomley@hansenpartnership.com Hansen Partnership < 2009-01-01
+james.bottomley@hansenpartnership.com Novell < 2011-05-01
+james.bottomley@hansenpartnership.com Parallels
+jan@gondor.com		reliablesolutions	# Jan Niehusmann
+jan.kiszka@web.de	Siemens			# Jan Kiszka
+jan.nikitenko@gmail.com	ATRON electronic	# Jan Nikitenko
+jaredeh@gmail.com	Intel	< 2008-04-08	# Jared Hulbert
+jaredeh@gmail.com	Micron			# Jared Hulbert
+jassisinghbrar@gmail.com	Samsung		# jassi brar
+jbailey@raspberryginger.com	Google	# Jeff Bailey
+jc@eclis.ch	CeTT				# Jean-Christian de Rivaz
+jcm@jonmasters.org	Red Hat		# Jon Masters
+jcrigby@gmail.com	Freescale			# John Rigby
+jelle@foks.8m.com	Observision			# Jelle Foks
+jengelh@gmx.de	CC Computer Consultants	# Jan Engelhardt
+jengelh@linux01.gwdg.de	CC Computer Consultants	# Jan Engelhardt
+jeremy@goop.org	XenSource			# Jeremy
+jeremyhu@freedesktop.org	Apple
+jeremy@talador.com.ar	TECNA			# jeremy theler
+jes.sorensen@gmail.com	Red Hat		# Jes Sorensen
+jgarzik@pobox.com	Red Hat		# Jeff Garzik
+jhnikula@gmail.com	(Consultant)		# Jarkko Nikula
+jhnikula@gmail.com	(None) < 2010-03-01	# Jarkko Nikula
+jim@meyering.net	Red Hat		# Jim Meyering
+jimix@pobox.com		IBM		# Jimi Xenidis
+jjschlst@gmail.com	Bivio Networking	# Jay Schulist
+jmorris@namei.org	Red Hat		< 2012-02-20
+jmorris@namei.org	Oracle
+johannes@sipsolutions.net	Intel
+johannes@sipsolutions.net	(None) < 2010-02-01	# Johannes Berg
+jonas.bonn@gmail.com	South Pole AB		# Jonas Bonn
+jonathan@jonmasters.org	Red Hat		# Jon Masters
+jon.dufresne@gmail.com	Even Technologies	# Jon Dufresne
+joro@8bytes.org		AMD			# Joerg Roedel
+jra@samba.org	Google
+jsun@junsun.net		Netspectrum	# Jun Sun
+jt@cr0.org		Google		# Julien TINNES
+julia.lawall@lip6.fr	INRIA
+julian_cable@yahoo.com	BBC			# Julian Cable
+julius.volz@gmail.com	Google		# Julius Volz
+junkio@cox.net	Twin Sun			# Junio C Hamano
+jupyung@gmail.com	Samsung		# Jupyung Lee
+jwcart2@tycho.nsa.gov	US National Security Agency	# James Carter
+kadlec@blackhole.kfki.hu	KFKI Research Institute	# Jozsef Kadlecsik
+karl.beldan@gmail.com	Mobile Devices Ingenierie	# Karl Beldan
+kazunori@miyazawa.org	Yokogawa Electric Corporation	# Kazunori MIYAZAWA
+keithp@keithp.com	Intel		# Keith Packard
+kem@kem.org		Red Hat
+kernel1@cyberdogtech.com	Google		# Matt LaPlante
+kevlo@kevlo.org		Micro-Star International	# Kevin Lo
+khali@linux-fr.org	Novell			# Jean
+khilman@deeprootsystems.com (Consultant)
+khilman@deeprootsystems.com (Consultant) < 2010-06-01
+khilman@deeprootsystems.com Texas Instruments  < 2011-01-01
+kieranbingham@gmail.com	MPC-Data		# Kieran Bingham
+kirandivekar@gmail.com	Marvell			# Kiran Divekar
+k.kooi@student.utwente.nl Texas Instruments	# Koen Kooi
+koen@beagleboard.org	Texas Instruments	# Koen Kooi
+krh@bitplanet.net	Intel
+krh@bitplanet.net	Red Hat	< 2009-11-02	# Kristian Hogsberg
+kuznet@ms2.inr.ac.ru	Parallels		# ANK
+kwangwoo.lee@gmail.com	Broadcom		# Kwangwoo Lee
+kyle@mcmartin.ca	Red Hat		# Kyle McMartin
+ladis@linux-mips.org	2N Telekomunikace	# Ladislav Michl
+lanconelli.claudio@eptar.com	Eurek srl	# Claudio Lanconelli
+lars@segv.dk		FractureCode Corporation	# Lars Munch
+laurent@lvivier.info	Bull		# lvivier.info
+laurent.pinchart@ideasonboard.com  Nokia	# (linkedin 2/10)
+lcappa@gmail.com	Sequoia IT		# Luca Cappa
+leandroal@gmail.com	Signove			# Leandro Sales
+lee.nipper@gmail.com	Avocent			# Lee Nipper
+lenb@kernel.org	Intel				# Len Brown
+lennart@poettering	Red Hat		# Lennart Poettering
+leo@zh-kernel.org	Freescale		# Li Yang
+libv@skynet.be		Novell
+linuxzsc@gmail.com	Freescale		# Richard Zhao
+linville@tuxdriver.com	Red Hat	# John Linville
+liodot@gmail.com	SofaWare
+list.btrfs@jan-o-sch.net	Oracle		# Jan Schmidt
+lliubbo@gmail.com	Analog Devices		# Bob Liu
+linux@roeck-us.net	Ericsson		# Guenter Roeck
+lopo.david@gmail.com	Mips Technologies	# David Lopo
+lsorense@csclub.uwaterloo.ca	RuggedCom	# Lennart Sorensen
+lucas.de.marchi@gmail.com	ProFUSION Embedded Systems # Lucas De Marchi
+lucas.de.marchi@gmail.com	STMicroelectronics < 2010-07-26	# Lucas De Marchi
+lucho@ionkov.net	Los Alamos National Laboratory # Latchesar Ionkov
+luiscarlos@gmail.com	cozybit			# Luis Carlos Cobo
+luis.f.correia@gmail.com	(Unknown)	# Luis Correia
+lunz@falooley.org	Reflex Security		# Jason Lunz
+mac@mcrowe.com	Roku				# Mike Crowe
+magnus.damm@gmail.com	OpenSource AB		# Magnus Damm
+mano@roarinelk.homelinux.net	MSC Vertriebsges	# Manuel Lauss
+markus.heidelberg@web.de	E.G.O. GmbH	# Markus Heidelberg
+markus.t.metzger@googlemail.com	Intel	# Markus Metzger
+matejken@gmail.com	Instrumentation Technologies
+matthieu.herrb@laas.fr	OpenBSD
+mattias@vmlinux.org	Westermo	# Mattias Walstr?om
+mattilinnanvuori@yahoo.com	Ascom		# Matti Linnanvuori
+mattjreimer@gmail.com	SDG Systems		# Matt Reimer
+maxcir@gmail.com	STMicroelectronics		# massimo cirillo
+mbligh@mbligh.org	Google		# Martin Bligh
+mcgrof@gmail.com	Rutgers University		# Luis R. Rodriguez
+mcuos.com@gmail.com	Nuvoton Technology	# Wan ZongShun
+me@felipebalbi.com	Nokia			# Felipe Balbi
+me@mortis.eu	Signips			# Giel van Schijndel
+mesak82@gmail.com	Texas Instruments	# Misael Lopez
+metan@ucw.cz		Novell		# Cyril Hrubis
+mfuzzey@gmail.com	Parkeon			# Martin Fuzzey
+mibru@gmx.de	Kontron Embedded Modules		# Michael Brunner
+michaelc@cs.wisc.edu	Red Hat		# Mike Christie
+michael@ellerman.id.au	IBM		# Michael Ellerman
+mika.westerberg@iki.fi	Nokia			# Mika Westerberg
+mike@halcrow.us	IBM			# Michael Halcrow
+mikem@beardog.cca.cpqcorp.net	HP		# Mike Miller
+mikey@neuling.org	IBM			# Michael Neuling
+miklos@szeredi.hu	Novell			# Miklos
+mikulas@artax.karlin.mff.cuni.cz	Red Hat	# Mikulas Patocka
+miltonm@bga.com		IBM	# Milton Miller
+mingo@elte.hu	Red Hat			# Ingo
+mlord@pobox.com	Real-Time Remedies		# Mark Lord
+mohanlaljangir@gmail.com	Samsung		# Mohanlal Jangir
+monstr@monstr.eu	PetaLogix
+mostrows@gmail.com	VMWare			# Michal Ostrowski
+moussa.a.ba@gmail.com	Micron			# Moussa Ba
+mpm@selenic.com	CE Linux Forum		# Matt Mackall
+mranostay@gmail.com	Embedded Alley Solutions	# Matt Ranostay
+mrobbins@mit.edu	NerdKits		# Michael F. Robbins
+mtk.manpages@googlemail.com	Google < 2008-04-01	# Michael Kerrisk
+mtk.manpages@googlemail.com	Linux Foundation < 2009-02-01
+mtk.manpages@googlemail.com	(None)
+mts.doredevelopment@gmail.com	Doreà¤¼Development	# Morten Svendsen
+nab@linux-iscsi.org	Rising Tide Systems	# Nicholas Bellinger
+nakam@linux-ipv6.org	Hitachi			# Masahide NAKAMURA
+namonai@gmail.com	In-Store Broadcasting Network	# Craig Kelley
+nathalie.furmento@labri.fr	CNRS
+neilb@cse.unsw.edu.au	Novell			# Neil Brown
+neiljay@gmail.com	Imagination Technologies	# Neil Jones
+ngupta@vflare.org	Academia
+ngupta@vflare.org	VMware  < 2010-07-07 # Nitin Gupta
+nhorman@tuxdriver.com	Red Hat		# Neil Horman
+nico@fluxnic.net	Linaro		# Nicolas Pitre
+nicolas.pitre@linaro.org	Linaro	# Nicolas Pitre
+niklaus.giger@member.fsf.org	Netstal Maschinen	# Niklaus Giger
+nils.carlson@ludd.ltu.se	Ericsson	# Nils Carlson
+norsk5@yahoo.com	SoftwareBitMaker		# Doug Thompson
+ntl@pobox.com	IBM			# Nathan Lynch
+oakad@yahoo.com		(Unknown)
+ob@emanuele.us		Crystalfontz	# Robert Emanuele
+obi@linuxtv.org		(Unknown)
+ohad@wizery.com		Texas Instruments	# Ohad Ben-Cohen
+oliver@neukum.org	(None)
+oliver@neukum.org	Novell < 2009-03-03		# Oliver Neukum
+olof@lixom.net	Agnilux < 2010-05-01 # pers comm
+olof@lixom.net	Google  # ibid
+olof@lixom.net	PA Semi < 2009-08-29 # pers. comm, since ~1/2006
+omar.oberthur@gmail.com	Oberthur Technologies	# Omar Laazimani
+onewayforever@gmail.com	Dawning Information Industry Co	# wan wei
+pablo@netfilter.org	University of Sevilla	# Pablo Neira Ayuso
+patrick.boettcher@desy.de	DiBcom		# Patrick Boettcher
+patrickglass@gmail.com	PMC-Sierra < 2009-04-01		# Patrick Glass
+patrickglass@gmail.com	Qualcomm
+paulus@samba.org	IBM			# Paul
+pavel@ucw.cz	Novell				# Pavel
+pawel@osciak.com	Intel	# Linkedin
+pbadari@gmail.com	IBM		# Badari Pulavarty
+pcnet32@verizon.net	Cisco			# Don Fry
+penguin-kernel@i-love.sakura.ne.jp	NTT	# Tetsuo Handa
+perex@perex.cz	Red Hat		# Jaroslav Kysela (late 2007)
+peter@cs.unisa.edu.au	Red Hat
+peter.hutterer@who-t.net	Red Hat
+peterz@infradead.org	Red Hat		# Peter Zijlstra
+piastryyy@gmail.com	Etersoft	# Pavel Shilovsky
+pinglinux@gmail.com	Wacom		# Ping Cheng
+pizza@shaftnet.org	AbsoluteValue Systems	# Solomon Peachy
+psandeep.s@gmail.com	Celunite			# Sandeep Sanjay Patil
+raphaelpereira@gmail.com	Concept Inovation, Sustaintability and Technology	# Raphael Derosso Pereira
+raven@themaw.net	Red Hat		# Ian Kent
+rdoursenaud@free.fr	EMA Tech	# Raphaël Doursenaud
+#
+# NOTE Randy appears to have left Oracle as of July 2011
+#
+rdunlap@xenotime.net	Oracle			# Randy Dunlap
+rgetz@blackfin.uclinux.org	Analog Devices	# Robin Getz
+rgoldwyn@gmail.com	Novell			# Goldwyn Rodrigues
+richard.genoud@gmail.com	Adeneo		# Richard Genoud
+r.marek@assembler.cz	SYSGO			# Rudolf Marek
+rminnich@gmail.com	Sandia National Labs	# Ron Minnich
+robert@schwebel.de	Pengutronix		# Robert Schwebel
+robert@sixbynine.org	Imagination Technologies < 2008-06-01
+robert@sixbynine.org	(None)			# Robert Bragg
+rob@landley.net	Linux Foundation		# Rob Landley
+roland@topspin.com	Cisco < 2011-01-15
+roland@topspin.com	Pure Storage		# Roland Dreier
+rostedt@goodmis.org	Red Hat		# Steven Rostedt
+rui.p.m.sousa@gmail.com	Mindspeed Technologies	# Rui Sousa
+russd@asu.edu	Computer Sciences Corporation	# Russell Dill
+rustcorp.com.au	IBM			# Rusty
+s0348365@sms.ed.ac.uk	Edinburgh Robotics	# Alistair John Strachan
+sachin.kamat@linaro.org	Samsung
+saeed.bishara@gmail.com	Marvell			# saeed bishara
+saharabeara@gmail.com	Intel		# Sarah A Sharp
+salikhmetov@gmail.com	MontaVista		# Anton Salikhmetov
+salsasepp@googlemail.com	LizardQ		# Stefan Steuerwald
+sandeen@sandeen.net	Red Hat		# Eric Sandeen
+sandeepksinha@gmail.com	NetApp			# SandeepKsinha
+sandmann@daimi.au.dk	Red Hat
+sankar.curiosity@gmail.com	Novell		# Sankar P
+sbrown@cortland.com	InfoObjects		# Steve Brown
+sds@tycho.nsa.gov	US National Security Agency	# Stephen Smalley
+seattleplus@gmail.com	IBM		# Dean Hildebrand
+sebastiano.dipaola@gmail.com	Telecom Italia	# Sebastiano Di Paola
+serge@hallyn.com	Canonical	# Serge Hallyn
+serge@hallyn.com	IBM		< 2010-07-01 # Date approx
+sfeldma@onlinenw.com	Nuova Systems		# Scott Feldman
+shijie8@gmail.com	Telegent System		# Huang Shijie
+shinel@foxmail.com	Red Flag		# Shine Liu
+shirishpargaonkar@gmail.com	IBM
+shpedoikal@gmail.com	IBM		# Kent Yoder
+simon.kagstrom@netinsight.net Net Insight
+sjhill@realitydiluted.com	Rockwell Collins	# Steven J. Hill
+slipszi@gmail.com	Thot-Soft 2002		# Szilveszter Ordog
+snitzer@gmail.com	IBRIX			# Mike Snitzer
+snjw23@gmail.com	Samsung			# Sylwester Nawrocki
+socketcan@hartkopp.net	Volkswagen		# Oliver Hartkopp
+sonny@burdell.org	IBM			# Sonny Rao
+srplsnh@gmail.com	ST Microelectronics	# Surinder P Singh
+stefanha@gmail.com	IBM			# Stefan Hajnoczi
+stgraber@ubuntu.com	Revolution Linux	# Stéphane Graber
+stigge@antcom.de	PHILOSYS Software		# Roland Stigge
+subhash.peddamallu@gmail.com	VMWare		# Subhash Peddamallu
+svendsen@pvv.org	Norbit
+sven.eckelmann@gmx.de	Saxnet Gmbh.		# Sven Eckelmann
+svens@bitebene.org	Astaro			# Sven Schnelle
+svens@stackframe.org	Astaro			# Sven Schnelle
+sven@thebigcorporation.com	Novell		# Sven-Thorsten Dietrich
+szpajder@staszic.waw.pl	Sferia			# Tomasz Lemiech
+tabbott@mit.edu		Ksplice, Inc.
+taviso@sdf.lonestar.org	Google		# Tavis Ormandy
+the.sator@gmail.com	Axis			# Jonas Danielsson
+thomas.abraham@linaro.org	Samsung
+thomas.petazzoni@enix.org	Free Electrons	# Thomas Petazzoni
+tim.gardner@canonical.com	TriplePoint		# Tim Gardner
+tixy@yxit.co.uk		Linaro	# Direct employee https://wiki.linaro.org/MeetTheTeam
+tj@kernel.org		Novell		        # Tejun
+tom.d.arbuckle@gmail.com	University of Limerick	# Tom Arbuckle
+tony@bakeyournoodle.com	IBM		# Tony Breeds
+torbenh@gmx.de		linutronix	# Torben Hohn - according to tglx
+torgny.johansson@gmail.com	Ericsson	# Torgny Johansson
+tpm@selhorst.net	Sirrix			# Marcel Selhorst
+tramp.enshrine.stephen@blacksapphire.com	International Telematics Ltd	# Stephen Blackheath
+triad@df.lth.se		Ericsson		# Linus Walleij
+trond.myklebust@fys.uio.no	NetApp		# Trond
+tytso@mit.edu		Google		# Ted Ts'o
+tytso@mit.edu		IBM		< 2010-01-01
+ulissesf@gmail.com	ProFUSION		# Ulisses Furquim
+vandrove@vc.cvut.cz	CTU			# Petr Vandrovec
+vandry@tzone.org	General Aviation Safety Network		# Phil Vandry
+vapier@gentoo.org	Analog Devices		# Mike Fyrysinger
+vasiliy.leonenko@mail.ru	Intel	# Vasiliy Leoenenko
+hverkuil@xs4all.nl	Cisco		# Hans Verkuil
+vijaykumar@bravegnu.org	Zilogic Systems	# Vijay Kumar
+vimal.newwork@gmail.com	(None)			# Vimal Singh
+vimal.newwork@gmail.com	Texas Instruments < 2010-07-12 # Vimal Singh
+viro@www.linux.org.uk	Red Hat		# Al Viro
+vitja.makarov@gmail.com	GeoTechnologies	# Vitja Makarov
+vivek.natraj@gmail.com	Atheros Communications	# Vivek Natarajan
+vksavl@gmail.com	MontaVista			# Pavel Kiryukhin
+v.mayatskih@gmail.com	Red Hat		# Vitaly Mayatskikh
+w@1wt.eu	Exosec				# Willy Tarreau
+wagi@monom.org	Celestrius < 2009-05-18			# Daniel Wagner
+wagi@monom.org	(None)
+walken@zoy.org		VMWare			# Michel Lespinasse
+wangcong@zeuux.org	Critical Links		# WANG Cong
+weiyi.huang@gmail.com	Fujitsu			# Huang Weiyi
+wfp5p@virginia.edu	University of Virginia
+wharms@bfs.de	German Government		# walter harms
+will.newton@gmail.com	Imagination Technologies	# Will Newton
+wli@holomorphy.com	Oracle			# Bill Irwin
+xiphmont@xiph.org	Red Hat		# Monty
+yakovenkov@gmail.com	CJSC NII STT	# Valentin Yakovenkov
+yegorslists@googlemail.com	Vision Systems GmbH	# Yegor Yefremov
+yhlu.kernel@gmail.com	Sun			# Yinghai Lu
+ytht.net@gmail.com	Beijing Rising Technology Co.	# lepton
+zealcook@gmail.com	Soliton Network Systems
+zeylie@gmail.com	Absolut Bank			# if
+zhangqiang.buaa@gmail.com	Intel	# Zhang Qiang
+zhu.yanhai@gmail.com	Intel		# Yanhai Zhu
+maksim.rayskiy@gmail.com	Broadcom	# Maksim Rayskiy
+artur128@3dzimmer.de	(Unknown)
+huajun.li.lee@gmail.com	(Unknown)
+wangxiaochen0@gmail.com (Unknown)
+rdkehn@yahoo.com	(Unknown)
+zj.barak@gmail.com	(Unknown)
+savik751@gmail.com	(Unknown)
+korg@jan-o-sch.net	STRATO AG
+sensille@gmx.net	STRATO AG
+sbehrens@giantdisaster.de	STRATO AG
