@@ -1,0 +1,26 @@
+#!/bin/sh
+
+REPO=$1
+START=$2
+END=$3
+
+LAYERS="meta-fsl-arm meta-fsl-arm-extra meta-fsl-demos"
+CWD=`pwd`
+
+for l in $LAYERS; do
+	(cd $REPO/sources/$l ; git log -p -M $START..$END | \
+		gitdm -b $CWD/ -c $CWD/gitdm.config -u -s -a -o $CWD/results.$l.txt)
+done
+
+rm -f $CWD/results.all.txt
+for l in $LAYERS; do
+	cat >> $CWD/results.all.txt <<EOF
+Statistics for $l
+$(for c in `seq 2 $(echo "Statistics for $l" | wc -c)`; do echo -n '-'; done)
+
+$(cat results.$l.txt)
+
+
+EOF
+	rm $CWD/results.$l.txt
+done
