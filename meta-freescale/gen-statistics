@@ -9,10 +9,11 @@ CWD=`pwd`
 
 for l in $LAYERS; do
 	(cd $REPO/sources/$l ; git log -p -M $START..$END | \
-		gitdm -b $CWD/ -c $CWD/gitdm.config -u -s -a -o $CWD/results.$l.txt)
+		gitdm -b $CWD/ -c $CWD/gitdm.config -u -s -a -o $CWD/results.$l.txt -x $CWD/data.$l.csv)
 done
 
 rm -f $CWD/results.all.txt
+rm -f $CWD/contributors.all.txt.in
 for l in $LAYERS; do
 	cat >> $CWD/results.all.txt <<EOF
 Statistics for $l
@@ -22,5 +23,10 @@ $(cat results.$l.txt)
 
 
 EOF
+	tail -n +2 $CWD/data.$l.csv | cut -d ',' -f 1,2 | sed 's@"\(.*\)","\(.*\)"@\1 <\2>@g' >> $CWD/contributors.all.txt.in
 	rm $CWD/results.$l.txt
+	rm $CWD/data.$l.csv
 done
+
+sort -u < $CWD/contributors.all.txt.in > $CWD/contributors.all.txt
+rm $CWD/contributors.all.txt.in
