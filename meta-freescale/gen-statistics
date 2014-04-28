@@ -4,7 +4,7 @@ REPO=$1
 START=$2
 END=$3
 
-LAYERS="meta-fsl-arm meta-fsl-arm-extra meta-fsl-demos"
+LAYERS="meta-fsl-arm meta-fsl-arm-extra meta-fsl-demos base Documentation"
 CWD=`pwd`
 
 for l in $LAYERS; do
