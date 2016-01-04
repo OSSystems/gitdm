@@ -1,333 +1,292 @@
 #!/usr/bin/python
 #
-# Create a graph of patch flow into the mainline.
+# git log --pretty="%H %P" | this program
 #
-# This code is part of the LWN git data miner.
-#
-# Copyright 2007-11 Eklektix, Inc.
-# Copyright 2007-11 Jonathan Corbet <corbet@lwn.net>
-#
-# This file may be distributed under the terms of the GNU General
-# Public License, version 2.
-#
-import sys
-from patterns import patterns
+import sys, subprocess, argparse, pickle
+import graphviz
+import patterns
 
-#
-# The various types of commit we understand.
-#
-class Commit:
-    def __init__(self, id, parent):
+Mergepat = patterns.patterns['ExtMerge']
+IntMerge = patterns.patterns['IntMerge']
+IntMerge2 = patterns.patterns['IntMerge2']
+Mergelist = { }
+
+class Merge:
+    def __init__(self, id, tree = None):
         self.id = id
-        self.parent = parent
-        self.ismerge = 0
-        self.treepriority = 0
-#
-# Merges are special 
-#
-class Merge (Commit):
-    def __init__(self, id, parent):
-        Commit.__init__(self, id, parent)
-        self.ismerge = 1
-        self.internal = 1 # Two branches within a repo?
-        self.parents = [ parent ]
-        
-    def addparent(self, parentid):
-        self.parents.append(parentid)
-
-    def addtree(self, tree):
-        self.tree = tree
-        self.internal = 0
-
-#
-# Trees: where the commits come from.
-#
-class Tree:
-    def __init__(self, name, url):
-        self.name = name
-        self.url = url
-        self.inputs = [ ]
         self.commits = [ ]
+        self.merges = [ ]
+        self.tree = tree or '?'
+        self.internal = False
+        if tree is None:
+            self.getdesc()
+        Mergelist[id] = self
 
-    def addcommit(self, id):
-        self.commits.append(id)
-
-    def addinput(self, tree):
-        if tree not in self.inputs:
-            self.inputs.append(tree)
-            # print '%s -> %s' % (tree.name, self.name)
-
-Mainline = Tree('Mainline',
-                'git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux-2.6.git')
-KnownTrees = { Mainline.url: Mainline }
-
-def NormalizeURL(url):
-    if url[:4] == 'git:':
-        return url
-    if url == '../net-2.6/':
-        url = 'git://git.kernel.org/pub/scm/linux/kernel/git/davem/net-2.6'
-    url = url.replace('master.kernel.org:', 'git://git.kernel.org')
-    if url[-18:] == 'torvalds/linux-2.6':
-        url += '.git'
-    if url[:8] == '/pub/scm':
-        url = 'git://git.kernel.org' + url
-    return url
-
-def LookupTree(url):
-    url = NormalizeURL(url)
-    try:
-        return KnownTrees[url]
-    except KeyError:
-        tree = Tree(url, url)
-        KnownTrees[url] = tree
+    def normalize_tree(self, tree):
+        if tree[:6] == 'git://':
+            tree = tree[6:]
+        if tree.find('git.kernel.org') >= 0:
+            stree = tree.split('/')
+            return '$KORG/%s/%s' % (stree[-2], stree[-1])
         return tree
 
-#
-# We track which tree every commit belongs to.
-#
-CommitTrees = { }
-class CTEntry:
-    def __init__ (self, tree, priority, path):
-        self.tree = tree
-        self.priority = priority
-        self.path = path
+    def getdesc(self):
+        command = ['git', 'log', '-1', self.id]
+        p = subprocess.Popen(command, cwd = Repo, stdout = subprocess.PIPE,
+                             bufsize = 1)
+        for line in p.stdout.readlines():
+            #
+            # Maybe it's a merge of an external tree.
+            #
+            m = Mergepat.search(line)
+            if m:
+                self.tree = self.normalize_tree(m.group(3))
+                self.internal = False
+                break
+            #
+            # Or maybe it's an internal merge.
+            #
+            m = IntMerge.search(line) or IntMerge2.search(line)
+            if m:
+                self.internal = True
+                break
+        p.wait()
+            
+    def add_commit(self, id):
+        self.commits.append(id)
 
-def AddCommitTree(id, entry):
-#    print 'add: ', id, '[',
-#    for tree in entry.path:
-#        print tree.name,
-#    print ']'
-    try:
-        oldentry = CommitTrees[id]
-        if entry.priority < oldentry.priority:
-            CommitTrees[id] = entry
-    except KeyError:
-        CommitTrees[id] = entry
-
-
-def LookupCommitTree(id):
-    try:
-        return CommitTrees[id]
-    except KeyError:
-        print 'Unfound commit %s' % (id)
-        return CTEntry (Mainline, 0, [])
+    def add_merge(self, merge):
+        self.merges.append(merge)
 
 #
-# Input handling with one-line pushback.
+# Read the list of commits from the input stream and find which
+# merge brought in each.
 #
-SavedLine = None
-Input = sys.stdin
-
-def GetLine():
-    global SavedLine
-    if SavedLine:
-        ret = SavedLine
-        SavedLine = None
-        return ret
-    return Input.readline()
-
-def SaveLine(line):
-    global SavedLine
-    SavedLine = line
-
-#
-# Pull in a commit and see what it is.
-#
-def GetCommit():
-    #
-    # Skip junk up to the next commit.
-    #
-    while 1:
-        line = GetLine()
-        if not line:
-            return None
-        m = patterns['commit'].match(line)
-        if m:
-            break
-
-    #
-    # Look at the commit and see how many parents we have.
-    #
-    ids = m.group(1).split()
-    if len(ids) <= 1:
-        if len(CommitTrees.values()) > 0:
-            print 'No-Parent commit:', ids[0]
-            return GetCommit()
-        print 'Did you run git with --parents?'
-        print ids
-        sys.exit(1)
-    if len(ids) == 2:  # Simple commit
-        return Commit(ids[0], ids[1])
-    #
-    # OK, we have a merge.
-    #
-    merge = Merge(ids[0], ids[1])
-    for id in ids[2:]:
-        merge.addparent(id)
-    #
-    # We need to figure out what kind of merge it is, so read through the
-    # descriptive text to the merge line.
-    #
-    while 1:
-        line = GetLine()
-        if not line:
-            print 'EOF looking for merge line'
-            return None
-        #
-        # Maybe it's an external merge?
-        #
-        m = patterns['ExtMerge'].match(line)
-        if m:
-            merge.addtree(LookupTree(m.group(2)))
-            return merge
-        #
-        # OK, maybe it's internal
-        #
-        if patterns['IntMerge'].match(line) or patterns['IntMerge2'].match(line):
-            #print 'Internal:', line[:-1]
-            merge.internal = 1
-            return merge
-        m = patterns['commit'].match(line)
-        if m:
-            print 'Hit next commit (%s) looking for merge line' % (m.group(1))
-            SaveLine(line)
-            return GetCommit()
-
-#
-# Print out a tree and its inputs
-#
-def PrintTree(tree, indent = ''):
-    print '%s%4d %s' % (indent, len(tree.commits), tree.name)
-    for input in tree.inputs:
-        PrintTree(input, indent + '    ')
-
-#
-# Let's try to build a data structure giving the patch flows.
-#
-class FlowNode:
-    def __init__(self, tree):
-        self.tree = tree
-        self.inputs = { }
-        self.commits = 0
-
-def BuildFlowTree():
-    rootnode = FlowNode(Mainline)
-    notree = Tree('[No tree]', '')
-    for centry in CommitTrees.values():
-        path = centry.path
-        if not path:
-            path = [ notree ]
-        FillFlowPath(path, rootnode)
-    return rootnode
-
-def FillFlowPath(path, node):
-    node.commits += 1
-    if len(path) == 0:
-        return
-    next, rest = path[0], path[1:]
-    try:
-        nextnode = node.inputs[next.name]
-    except KeyError:
-        nextnode = node.inputs[next.name] = FlowNode(next)
-    return FillFlowPath(rest, nextnode)
-
-def PrintFlowTree(ftree, indent = ''):
-    print '%s%3d %s' % (indent, ftree.commits, ftree.tree.name)
-    inputs = ftree.inputs.values()
-    inputs.sort(GVSort)
-    for input in inputs:
-        PrintFlowTree(input, indent + '  ')
-
-#
-# Something for graphviz
-#
-GVHeader = '''digraph "runtree" {
-graph [ label = "Patch flow into the mainline",
-        concentrate = true,
-        nodesep = 0.1,
-        rankdir = LR ];
-node [shape = polygon,
-      sides = 4,
-      height = 0.3
-      fontsize = 8];
-'''
-
-
-MainlineCommits = 0
-
-def GVTree(ftree):
-    global MainlineCommits
-    MainlineCommits = ftree.commits
-    gvf = open('runtree.gv', 'w')
-    gvf.write(GVHeader)
-    inputs = ftree.inputs.values()
-    inputs.sort(GVSort)
-    for input in inputs:
-        GVPrintNode(gvf, input, 'Mainline')
-    gvf.write('}\n')
-
-def GVNodeName(treename):
-    sname = treename.split('/')
-    if treename.find('kernel.org') >= 0:
-        return '%s/%s' % (sname[-2], sname[-1])
-    sep = treename.find ('://')
-    if sep > 0:
-        return treename[sep+3:]
-    return treename
-
-def GVSort(n1, n2):
-    return n2.commits - n1.commits
-
-def GVPrintNode(gvf, node, parent):
-    name = GVNodeName(node.tree.name)
-    gvf.write ('"%s" -> "%s" [taillabel = "%d", labelfontsize = 8' % (name, parent, node.commits))
-    gvf.write (', arrowsize = 0.5')
-    if MainlineCommits/node.commits < 20:
-        gvf.write(', color = red')
-    elif MainlineCommits/node.commits < 100:
-        gvf.write(', color = orange');
-    gvf.write(']\n')
-    inputs = node.inputs.values()
-    if inputs:
-        inputs.sort(GVSort)
-        for input in inputs:
-            GVPrintNode(gvf, input, name)
-
-#
-# Main code.
-#
-commit = GetCommit()
-ncommits = 0
-while commit:
-    ncommits += 1
-    entry = LookupCommitTree(commit.id)
-    tree = entry.tree
-    priority = entry.priority
-    tree.addcommit(commit.id)
-    #
-    # For regular commits, just remember the tree involved
-    #
-    if not commit.ismerge:
-        AddCommitTree(commit.parent, entry)
-    #
-    # For merges we have to deal with all the parents.
-    #
-    else:
-        AddCommitTree(commit.parents[0], CTEntry (tree, priority, entry.path))
-        if commit.internal:
-            for p in commit.parents[1:]:
-                path = entry.path + [tree]
-                AddCommitTree(p, CTEntry (tree, priority, entry.path))
+def ingest_commits(src):
+    count = 0
+    for line in src.readlines():
+        sline = line.split()
+        commit = sline[0]
+        mc = Mergelist[find_merge(sline[0])]  # Needs try
+        if len(sline) > 2: # is a merge
+            mc.add_merge(Merge(commit))
         else:
-            for p in commit.parents[1:]:
-                path = entry.path + [commit.tree]
-                AddCommitTree(p, CTEntry (commit.tree, priority + 1,  path))
-                if commit.tree is not Mainline:
-                    tree.addinput(commit.tree)
-    commit = GetCommit()
-        
-#PrintTree(Mainline)
-ftree = BuildFlowTree()
-PrintFlowTree(ftree)
-GVTree(ftree)
-print '%d commits total, %d trees' % (MainlineCommits, len (KnownTrees.keys()))
+            mc.add_commit(commit)
+        count += 1
+        if (count % 50) == 0:
+            print '\r%5d ' % (count),
+            sys.stdout.flush()
+    print
+
+#
+# Figure out which merge brought in a commit.
+#
+MergeIDs = { }
+
+def find_merge(commit):
+    command = ['git', 'describe', '--contains', commit]
+    p = subprocess.Popen(command, cwd = Repo, stdout = subprocess.PIPE,
+                         bufsize = 1)
+    desc = p.stdout.readline().decode('utf8')
+    p.wait()
+    #
+    # The description line has the form:
+    #
+    #      tag~N^M~n...
+    #
+    # the portion up to the last ^ describes the merge we are after;
+    # in the absence of an ^, assume it's on the main branch.
+    #
+    uparrow = desc.rfind('^')
+    if uparrow < 0:
+        return 'mainline'
+    #
+    # OK, now get the real commit ID of the merge.  Maybe we have
+    # it stashed?
+    #
+    try:
+        return MergeIDs[desc[:uparrow]]
+    except KeyError:
+        pass
+    #
+    # Nope, we have to dig it out the hard way.
+    #
+    command = ['git', 'log', '--pretty=%H', '-1', desc[:uparrow]]
+    p = subprocess.Popen(command, cwd = Repo, stdout = subprocess.PIPE,
+                         bufsize = 1)
+    merge = p.stdout.readline().decode('utf8').strip()
+    #
+    # If we get back the same commit, we're looking at one of Linus's
+    # version number tags.
+    #
+    if merge == commit:
+        merge = 'mainline'
+    MergeIDs[desc[:uparrow]] = merge
+    p.wait()
+    return merge
+
+#
+# Internal merges aren't interesting from our point of view.  So go through,
+# find them all, and move any commits from such into the parent.
+#
+def zorch_internals(merge):
+    new_merges = [ ]
+    for m in merge.merges:
+        zorch_internals(m)
+        if m.internal:
+            merge.commits += m.commits
+            new_merges += m.merges
+        else:
+            new_merges.append(m)
+    merge.merges = new_merges
+
+#
+# Figure out how many commits flowed at each stage.
+#
+def count_commits(merge):
+    merge.ccount = len(merge.commits)
+    for m in merge.merges:
+        merge.ccount += count_commits(m)
+    return merge.ccount
+
+#
+# ...and how many flowed between each pair of trees
+#
+Treecounts = { }
+
+def tree_stats(merge):
+    try:
+        tcount = Treecounts[merge.tree]
+    except KeyError:
+        tcount = Treecounts[merge.tree] = { }
+    for m in merge.merges:
+        mcount = tcount.get(m.tree, 0)
+        try:
+            tcount[m.tree] = mcount + m.ccount
+        except AttributeError:
+            print 'AError', m.id, m.tree, mcount
+            continue
+        tree_stats(m)
+
+#
+# Maybe we only want so many top-level trees
+#
+def trim_trees(limit):
+    srcs = Treecounts['mainline']
+    srcnames = srcs.keys()
+    srcnames.sort(lambda t1, t2: srcs[t2] - srcs[t1])
+    nextra = len(srcnames) - limit
+    zapped = 0
+    for extra in srcnames[limit:]:
+        zapped += srcs[extra]
+        del srcs[extra]
+    srcs['%d other trees' % (nextra)] = zapped
+#
+# Take our map of the commit structure and boil it down to how many commits
+# moved from one tree to the next.
+#
+
+def dumptree(start, indent = ''):
+    int = ''
+    if start.internal:
+        int = 'I: '
+    print '%s%s%s: %d/%d %s' % (indent, int, start.id[:10],
+                                len(start.merges), len(start.commits),
+                                start.tree)
+    for merge in start.merges:
+        dumptree(merge, indent + '  ')
+
+def dumpflow(tree, indent = '', seen = []):
+    try:
+        srcs = Treecounts[tree]
+    except KeyError:
+        return
+    srctrees = srcs.keys()
+    srctrees.sort(lambda t1, t2: srcs[t2] - srcs[t1])
+    for src in srctrees:
+        if src in seen:
+            print 'Skip', src, srcs[src], seen
+        else:
+            print '%s%4d %s' % (indent, srcs[src], src)
+            dumpflow(src, indent = indent + '  ', seen = seen + [tree])
+
+#
+# Graphviz.
+#
+def GV_out(file):
+    graph = graphviz.Digraph('mainline', filename = file)
+    graph.body.extend(['label="Patch flow into the mainline"',
+                       'concentrate=true',
+                       'rankdir=LR' ])
+    graph.attr('node', fontsize="20", color="red", shape='ellipse')
+    graph.node('mainline')
+    graph.attr('node', fontsize="14", color="black", shape='polygon',
+               sides='4')
+    GV_out_node(graph, 'mainline')
+    graph.view()
+
+def GV_out_node(graph, node, seen = []):
+    try:
+        srcs = Treecounts[node]
+    except KeyError:  # "applied by linus"
+        return
+    srctrees = srcs.keys()
+    srctrees.sort(lambda t1, t2: srcs[t2] - srcs[t1])
+    for src in srctrees:
+        if src not in seen:
+            graph.edge(src, node, taillabel='%d' % srcs[src],
+                       labelfontsize="14")
+            GV_out_node(graph, src, seen + [node])
+#
+# argument parsing stuff.
+#
+def setup_args():
+    p = argparse.ArgumentParser()
+    p.add_argument('-d', '--dump', help = 'Dump merge list to file',
+                   required = False, default = '')
+    p.add_argument('-g', '--gvoutput', help = 'Graphviz output',
+                   required = False, default = '')
+    p.add_argument('-l', '--load', help = 'Load merge list from file',
+                   required = False, default = '')
+    p.add_argument('-o', '--output', help = 'Output file',
+                   required = False, default = '-')
+    p.add_argument('-r', '--repo', help = 'Repository location',
+                   required = False, default = '/home/corbet/kernel')
+    p.add_argument('-t', '--trim', help = 'Trim top level to this many trees',
+                   required = False, default = 0, type = int)
+    return p
+
+
+p = setup_args()
+args = p.parse_args()
+Repo = args.repo
+
+#
+# Find our commits.
+#
+if args.load:
+    dumpfile = open(args.load, 'r')
+    Mergelist = pickle.loads(dumpfile.read())
+    dumpfile.close
+    Mainline = Mergelist['mainline']
+else:
+    Mainline = Merge('mainline', tree = 'mainline')
+    ingest_commits(sys.stdin)
+    if args.dump:
+        dumpfile = open(args.dump, 'w')
+        dumpfile.write(pickle.dumps(Mergelist))
+        dumpfile.close()
+#
+# Now generate the flow graph.
+#
+zorch_internals(Mainline)
+# dumptree(Mainline)
+Treecounts['mainline'] = { 'Applied by Linus': len(Mainline.commits) }
+print 'total commits', count_commits(Mainline)
+tree_stats(Mainline)
+if args.trim:
+    trim_trees(args.trim)
+print 'Tree flow'
+dumpflow('mainline')
+if args.gvoutput:
+    GV_out(args.gvoutput)
