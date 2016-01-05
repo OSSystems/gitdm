@@ -4,6 +4,7 @@
 #
 # This is the painfully slow reworked brute-force version that
 # takes forever to run, but which hopefully gets the right results
+# It has been pretty much superseded by inittags, though.
 #
 # committags [git-args]
 #
@@ -92,7 +93,7 @@ for line in input.readlines():
     #
     nc += 1
     if (nc % 25) == 0:
-        print '%6d %s %s\r' % (nc, commit[:8], tag),
+        print '%6d %s %s           \r' % (nc, commit[:8], tag),
         sys.stdout.flush()
 
 print '\nFound %d/%d commits' % (nc, len(DB.keys()))
