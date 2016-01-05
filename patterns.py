@@ -40,8 +40,8 @@ patterns = {
     #
     # Merges are described with a variety of lines.
     #
-    'ExtMerge': re.compile(r'Merge( (branch|tag) .* of)? ([^ ]+:[^ ]+)\n$'),
-    'IntMerge': re.compile(r'^ +(Merge|Pull) .* into .*$'),
+    'ExtMerge': re.compile(r'^ +Merge( (branch|tag) .* of)? ([^ ]+:[^ ]+)\n$'),
+    'IntMerge': re.compile(r'(Merge|Pull) .* into .*$'),
     # PIntMerge2 = re.compile(r"^ +Merge branch(es)? '.*$"),
     'IntMerge2': re.compile(r"^ +Merge .*$"),
     # Another way to get the statistics (per file).
