@@ -74,8 +74,8 @@ def ingest_commits(src):
             mc.add_commit(commit)
         count += 1
         if (count % 50) == 0:
-            print '\r%5d ' % (count),
-            sys.stdout.flush()
+            sys.stderr.write('\r%5d ' % (count))
+            sys.stderr.flush()
     print
 
 #
@@ -144,7 +144,7 @@ def zorch_internals(merge):
 # Figure out how many commits flowed at each stage.
 #
 def count_commits(merge):
-    merge.ccount = len(merge.commits)
+    merge.ccount = len(merge.commits) + 1  # +1 to count the merge itself
     for m in merge.merges:
         merge.ccount += count_commits(m)
     return merge.ccount
@@ -161,11 +161,7 @@ def tree_stats(merge):
         tcount = Treecounts[merge.tree] = { }
     for m in merge.merges:
         mcount = tcount.get(m.tree, 0)
-        try:
-            tcount[m.tree] = mcount + m.ccount
-        except AttributeError:
-            print 'AError', m.id, m.tree, mcount
-            continue
+        tcount[m.tree] = mcount + m.ccount
         tree_stats(m)
 
 #
@@ -214,7 +210,7 @@ def dumpflow(tree, indent = '', seen = []):
 # Graphviz.
 #
 def GV_out(file):
-    graph = graphviz.Digraph('mainline', filename = file)
+    graph = graphviz.Digraph('mainline', filename = file, format = 'png')
     graph.body.extend(['label="Patch flow into the mainline"',
                        'concentrate=true',
                        'rankdir=LR' ])
@@ -225,6 +221,16 @@ def GV_out(file):
     GV_out_node(graph, 'mainline')
     graph.view()
 
+def GV_fixname(name):
+    return name.replace(':', '/') # or Graphviz chokes
+
+def GV_color(count):
+    if count >= RedThresh:
+        return 'red'
+    if count >= YellowThresh:
+        return 'orange'
+    return 'black'
+
 def GV_out_node(graph, node, seen = []):
     try:
         srcs = Treecounts[node]
@@ -234,8 +240,9 @@ def GV_out_node(graph, node, seen = []):
     srctrees.sort(lambda t1, t2: srcs[t2] - srcs[t1])
     for src in srctrees:
         if src not in seen:
-            graph.edge(src, node, taillabel='%d' % srcs[src],
-                       labelfontsize="14")
+            graph.edge(GV_fixname(src), GV_fixname(node),
+                       taillabel='%d' % srcs[src], labelfontsize="14",
+                       color = GV_color(srcs[src]), penwidth='2')
             GV_out_node(graph, src, seen + [node])
 #
 # argument parsing stuff.
@@ -254,13 +261,18 @@ def setup_args():
                    required = False, default = '/home/corbet/kernel')
     p.add_argument('-t', '--trim', help = 'Trim top level to this many trees',
                    required = False, default = 0, type = int)
+    p.add_argument('-R', '--red', help = 'Red color threshold',
+                   required = False, default = 800, type = int)
+    p.add_argument('-Y', '--yellow', help = 'Yellow color threshold',
+                   required = False, default = 200, type = int)
     return p
 
 
 p = setup_args()
 args = p.parse_args()
 Repo = args.repo
-
+RedThresh = args.red
+YellowThresh = args.yellow
 #
 # Find our commits.
 #
@@ -279,8 +291,9 @@ else:
 #
 # Now generate the flow graph.
 #
+#dumptree(Mainline)
 zorch_internals(Mainline)
-# dumptree(Mainline)
+#dumptree(Mainline)
 Treecounts['mainline'] = { 'Applied by Linus': len(Mainline.commits) }
 print 'total commits', count_commits(Mainline)
 tree_stats(Mainline)
