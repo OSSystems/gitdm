@@ -1,6 +1,17 @@
 #!/usr/bin/python
 #
 # git log --pretty="%H %P" | this program
+# See option descriptions at bottom
+#
+# This little program cranks through a series of patches, trying to determine
+# which trees each flowed through on its way to the mainline.  It does a
+# 'git describe' on each, so don't expect it to be fast for large numbers
+# of patches.
+#
+# One warning: it is easily confused by local branches, tags, etc.  For
+# best results, run it on a mainline tree with no added frobs.  Using
+# "git clone --reference" is a relatively easy way to come up with such
+# a tree without redownloading the whole mess.
 #
 import sys, subprocess, argparse, pickle
 import graphviz
