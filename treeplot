@@ -34,8 +34,9 @@ class Merge:
         Mergelist[id] = self
 
     def normalize_tree(self, tree):
-        if tree[:6] == 'git://':
-            tree = tree[6:]
+        colonslash = tree.find('://')
+        if colonslash > 0:
+            tree = tree[colonslash+3:]
         if tree.find('git.kernel.org') >= 0:
             stree = tree.split('/')
             return '$KORG/%s/%s' % (stree[-2], stree[-1])
