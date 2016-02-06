@@ -46,6 +46,9 @@ be:
 
 	-h file	Generate HTML output to the given file
 
+    -H file Export individual developer raw data as CSV. These data could be
+        used to evaluate the fidelity of developers.
+
 	-l num	Only list the top <num> entries in each report.
 
     -n  Use --numstat instead of generated patches to get the statistics.

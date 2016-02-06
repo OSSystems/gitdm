@@ -25,6 +25,8 @@ class Hacker:
         self.tested = [ ]
         self.reports = [ ]
         self.testcred = self.repcred = 0
+        self.activity_start = datetime.date.max
+        self.activity_end = datetime.date.min
         self.versions = [ ]
 
     def addemail (self, email, elist):
@@ -34,7 +36,7 @@ class Hacker:
 
     def emailemployer (self, email, date):
         for i in range (0, len (self.email)):
-            if self.email[i] == email:
+            if (email is None) or (self.email[i] == email):
                 for edate, empl in self.employer[i]:
                     if edate > date:
                         return empl
@@ -46,6 +48,10 @@ class Hacker:
         self.removed += patch.removed
         self.changed += max(patch.added, patch.removed)
         self.patches.append (patch)
+        if patch.date < self.activity_start:
+            self.activity_start = patch.date
+        if patch.date > self.activity_end:
+            self.activity_end= patch.date
 
     #
     # Note that the author is represented in this release.

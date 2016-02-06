@@ -89,4 +89,18 @@ def OutputCSV (file):
         writer.writerow ([author_name, stat.email, empl_name, stat.date,
                           stat.added, stat.removed, stat.changesets])
 
-__all__ = [  'AccumulatePatch', 'OutputCSV', 'store_patch' ]
+def OutputHackersCSV (file, hlist):
+    if file is None:
+        return
+    file.write ("Name,Last affiliation,Activity Start,Activity End,Commits\n")
+    for hacker in hlist:
+        if len(hacker.patches) > 0:
+            file.write ("\"%s\",%s,%s,%s,%d\n"%(hacker.name, \
+                        hacker.emailemployer (None, hacker.activity_end).name, \
+                        hacker.activity_start, hacker.activity_end, \
+                        len(hacker.patches)))
+
+__all__ = [  'AccumulatePatch', 'OutputCSV', 'OutputHackersCSV', 'store_patch' ]
+
+
+

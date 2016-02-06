@@ -36,6 +36,7 @@ AuthorSOBs = 1
 FileFilter = None
 CSVFile = None
 CSVPrefix = None
+HackersCSV = None
 AkpmOverLt = 0
 DumpDB = 0
 CFName = 'gitdm.config'
@@ -57,6 +58,7 @@ FileReport = None
 # -D		Output date statistics
 # -f file	Write touched-files report to <file>
 # -h hfile	HTML output to hfile
+# -H file   Export individual developer raw data as CSV
 # -l count	Maximum length for output lists
 # -n        Use numstats instead of generated patch from git log
 # -o file	File for text output
@@ -75,8 +77,9 @@ def ParseOpts():
     global DateStats, AuthorSOBs, FileFilter, AkpmOverLt, DumpDB
     global CFName, CSVFile, CSVPrefix,DirName, Aggregate, Numstat
     global ReportByFileType, ReportUnknowns, CompanyFilter, FileReport
+    global HackersCSV
 
-    opts, rest = getopt.getopt(sys.argv[1:], 'ab:dC:c:Df:h:l:no:p:r:stUuwx:yz')
+    opts, rest = getopt.getopt(sys.argv[1:], 'ab:dC:c:Df:H:h:l:no:p:r:stUuwx:yz')
     for opt in opts:
         if opt[0] == '-a':
             AkpmOverLt = 1
@@ -94,6 +97,8 @@ def ParseOpts():
             FileReport = opt[1]
         elif opt[0] == '-h':
             reports.SetHTMLOutput(open(opt[1], 'w'))
+        elif opt[0] == '-H':
+            HackersCSV = open (opt[1], 'w')
         elif opt[0] == '-l':
             reports.SetMaxList(int(opt[1]))
         elif opt[0] == '-n':
@@ -550,6 +555,10 @@ if TotalChanged == 0:
     TotalChanged = 1 # HACK to avoid div by zero
 if DateStats:
     PrintDateStats()
+
+if HackersCSV:
+    csvdump.OutputHackersCSV (HackersCSV, hlist);
+    HackersCSV.close ()
 
 if CSVPrefix:
     csvdump.save_csv(CSVPrefix)
