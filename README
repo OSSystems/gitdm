@@ -5,13 +5,13 @@ repository.
 
 INSTALLING GITDM
 
-gitdm is a python script and doesn't need to be proper installed like other
+gitdm is a python script and doesn't need to be properly installed like other
 normal programs. You just have to adjust your PATH variable, pointing it to
 the directory of gitdm or alternatively create a symbolic link of the script
 inside /usr/bin.
 
-Before actually run gitdm you may want also to update the configuration file
-(gitdm.config) with the needed information.
+Before actually runnning gitdm you may want also to update the configuration
+file (gitdm.config) with the needed information.
 
 
 RUNNING GITDM
@@ -78,7 +78,7 @@ be:
 
 	-z 	Dump out the hacker database to "database.dump".
 
-A typical command line used to generate the "who write 2.6.x" LWN articles
+A typical command line used to generate the "who wrote 2.6.x" LWN articles
 looks like:
 
     git log -p -M v2.6.19..v2.6.20 | \
