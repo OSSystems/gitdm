@@ -87,7 +87,7 @@ def get_desc(patch, line, input):
         line = getline(input)
     return S_CHANGELOG
 
-tagline = re.compile(r'^\s+(([-a-z]+-by)|cc):.*@.*$', re.I)
+tagline = re.compile(r'^\s+(([-a-z]+-by)|cc|fixes):.*$', re.I)
 def get_changelog(patch, line, input):
     if not line:
         if patch.templog:
@@ -137,6 +137,7 @@ def get_tag(patch, line, input):
             if patterns[tag].match(line):
                 patch.othertags += 1
                 break
+    patch.taglines.append(line)
     return S_TAGS
 
 def get_numstat(patch, line, input):
@@ -171,6 +172,7 @@ class patch:
         self.othertags = 0
         self.added = self.removed = 0
         self.files = [ ]
+        self.taglines = [ ]
 
     def addfile(self, added, removed, file):
         self.added += added
