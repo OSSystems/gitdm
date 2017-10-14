@@ -29,6 +29,7 @@ class Merge:
         self.merges = [ ]
         self.tree = tree or '?'
         self.internal = False
+        self.signed = False
         if tree is None:
             self.getdesc()
         Mergelist[id] = self
@@ -43,10 +44,24 @@ class Merge:
         return tree
 
     def getdesc(self):
-        command = ['git', 'log', '-1', self.id]
+        command = ['git', 'log', '-1', '--show-signature', self.id]
         p = subprocess.Popen(command, cwd = Repo, stdout = subprocess.PIPE,
                              bufsize = 1)
+        #
+        # Sometimes we don't match a pattern; that means that the
+        # committer radically modified the merge message.  A certain
+        # Eric makes them look like ordinary commits...  Others use
+        # it to justify backmerges of the mainline.  Either way, the
+        # best response is to treat it like an internal merge.
+        #
+        self.internal = True
         for line in p.stdout.readlines():
+            #
+            # Note if there's a GPG signature
+            #
+            if line.startswith('gpg:'):
+                self.signed = True
+                continue
             #
             # Maybe it's a merge of an external tree.
             #
@@ -76,11 +91,16 @@ class Merge:
 #
 def ingest_commits(src):
     count = 0
+    expected = 'nothing yet'
     for line in src.readlines():
-        sline = line.split()
+        sline = line[:-1].split()
         commit = sline[0]
-        mc = Mergelist[find_merge(sline[0])]  # Needs try
-        if len(sline) > 2: # is a merge
+        is_merge = (len(sline) > 2)
+        if (commit == expected) and not is_merge:
+            mc = last_merge
+        else:
+            mc = Mergelist[find_merge(sline[0])]  # Needs try
+        if is_merge:
             mc.add_merge(Merge(commit))
         else:
             mc.add_commit(commit)
@@ -88,8 +108,9 @@ def ingest_commits(src):
         if (count % 50) == 0:
             sys.stderr.write('\r%5d ' % (count))
             sys.stderr.flush()
+        expected = sline[1]
+        last_merge = mc
     print
-
 #
 # Figure out which merge brought in a commit.
 #
@@ -165,6 +186,7 @@ def count_commits(merge):
 # ...and how many flowed between each pair of trees
 #
 Treecounts = { }
+SignedTrees = set()
 
 def tree_stats(merge):
     try:
@@ -172,6 +194,8 @@ def tree_stats(merge):
     except KeyError:
         tcount = Treecounts[merge.tree] = { }
     for m in merge.merges:
+        if m.signed:
+            SignedTrees.add(m.tree)
         mcount = tcount.get(m.tree, 0)
         tcount[m.tree] = mcount + m.ccount
         tree_stats(m)
@@ -215,22 +239,29 @@ def dumpflow(tree, indent = '', seen = []):
         if src in seen:
             print 'Skip', src, srcs[src], seen
         else:
-            print '%s%4d %s' % (indent, srcs[src], src)
+            if src in SignedTrees:
+                print '%s%4d ** %s' % (indent, srcs[src], src)
+            else:
+                print '%s%4d %s' % (indent, srcs[src], src)
             dumpflow(src, indent = indent + '  ', seen = seen + [tree])
 
 #
 # Graphviz.
 #
 def GV_out(file):
-    graph = graphviz.Digraph('mainline', filename = file, format = 'png')
+    graph = graphviz.Digraph('mainline', filename = file, format = 'svg')
     graph.body.extend(['label="Patch flow into the mainline"',
                        'concentrate=true',
                        'rankdir=LR' ])
-    graph.attr('node', fontsize="20", color="red", shape='ellipse')
+    graph.attr('node', fontsize="20", color="blue", penwidth='4',
+               shape='ellipse')
     graph.node('mainline')
     graph.attr('node', fontsize="14", color="black", shape='polygon',
                sides='4')
-    GV_out_node(graph, 'mainline')
+    if DoSigned:
+        GV_out_node_signed(graph, 'mainline')
+    else:
+        GV_out_node(graph, 'mainline')
     graph.view()
 
 def GV_fixname(name):
@@ -243,6 +274,9 @@ def GV_color(count):
         return 'orange'
     return 'black'
 
+#
+# Output nodes with traffic coloring
+#
 def GV_out_node(graph, node, seen = []):
     try:
         srcs = Treecounts[node]
@@ -256,6 +290,27 @@ def GV_out_node(graph, node, seen = []):
                        taillabel='%d' % srcs[src], labelfontsize="14",
                        color = GV_color(srcs[src]), penwidth='2')
             GV_out_node(graph, src, seen + [node])
+
+#
+# Output nodes showing signature status
+#
+def GV_out_node_signed(graph, node, seen = []):
+    try:
+        srcs = Treecounts[node]
+    except KeyError:  # "applied by linus"
+        return
+    srctrees = srcs.keys()
+    srctrees.sort(lambda t1, t2: srcs[t2] - srcs[t1])
+    for src in srctrees:
+        color = 'red'
+        if src in SignedTrees:
+            color = 'darkgreen'
+        if src not in seen:
+            graph.attr('node', color=color)
+            graph.edge(GV_fixname(src), GV_fixname(node),
+                       taillabel='%d' % srcs[src], labelfontsize="14",
+                       color = color, penwidth='2')
+            GV_out_node_signed(graph, src, seen + [node])
 #
 # argument parsing stuff.
 #
@@ -277,6 +332,8 @@ def setup_args():
                    required = False, default = 800, type = int)
     p.add_argument('-Y', '--yellow', help = 'Yellow color threshold',
                    required = False, default = 200, type = int)
+    p.add_argument('-s', '--signed', help = 'Display signed trees',
+                   action='store_true', default = False)
     return p
 
 
@@ -285,6 +342,7 @@ args = p.parse_args()
 Repo = args.repo
 RedThresh = args.red
 YellowThresh = args.yellow
+DoSigned = args.signed
 #
 # Find our commits.
 #
