@@ -245,6 +245,20 @@ def dumpflow(tree, indent = '', seen = []):
                 print '%s%4d %s' % (indent, srcs[src], src)
             dumpflow(src, indent = indent + '  ', seen = seen + [tree])
 
+def SigStats(tree):
+    srcs = Treecounts[tree]
+    spulls = upulls = scommits = ucommits = 0
+    for src in srcs.keys():
+        if src in SignedTrees:
+            spulls += 1
+            scommits += srcs[src]
+        else:
+            upulls += 1
+            ucommits += srcs[src]
+    print '%d repos total, %d signed, %d unsigned' % (spulls + upulls,
+                                                      spulls, upulls)
+    print '   %d commits from signed, %d from unsigned' % (scommits, ucommits)
+
 #
 # Graphviz.
 #
@@ -373,3 +387,5 @@ print 'Tree flow'
 dumpflow('mainline')
 if args.gvoutput:
     GV_out(args.gvoutput)
+if DoSigned:
+    SigStats('mainline')
