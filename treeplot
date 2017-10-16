@@ -318,7 +318,7 @@ def GV_out_node_signed(graph, node, seen = []):
     for src in srctrees:
         color = 'red'
         if src in SignedTrees:
-            color = 'darkgreen'
+            color = 'black'
         if src not in seen:
             graph.attr('node', color=color)
             graph.edge(GV_fixname(src), GV_fixname(node),
