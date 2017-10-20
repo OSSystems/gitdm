@@ -3,8 +3,8 @@
 #
 # This code is part of the LWN git data miner.
 #
-# Copyright 2007-13 Eklektix, Inc.
-# Copyright 2007-13 Jonathan Corbet <corbet@lwn.net>
+# Copyright 2007-16 Eklektix, Inc.
+# Copyright 2007-16 Jonathan Corbet <corbet@lwn.net>
 #
 # This file may be distributed under the terms of the GNU General
 # Public License, version 2.
@@ -35,50 +35,32 @@ def Write(stuff):
 
 
 
-#
-# HTML output support stuff.
-#
-HTMLclass = 0
-HClasses = ['Even', 'Odd']
-
 THead = '''<p>
-<table cellspacing=3>
+<table cellspacing=3 class="OddEven">
 <tr><th colspan=3>%s</th></tr>
 '''
 
 def BeginReport(title):
-    global HTMLclass
-    
     Outfile.write('\n%s\n' % title)
     if HTMLfile:
         HTMLfile.write(THead % title)
-        HTMLclass = 0
 
-TRow = '''    <tr class="%s">
-<td>%s</td><td align="right">%d</td><td align="right">%.1f%%</td></tr>
-'''
-
-TRowStr = '''    <tr class="%s">
-<td>%s</td><td align="right">%d</td><td>%s</td></tr>
-'''
+TRow = ' <tr><td>%s</td><td align="right">%d</td><td align="right">%.1f%%</td></tr>\n'
+TRowStr = ' <tr><td>%s</td><td align="right">%d</td><td>%s</td></tr>\n'
 
 def ReportLine(text, count, pct):
-    global HTMLclass
     if count == 0:
         return
     Outfile.write ('%-25s %4d (%.1f%%)\n' % (text, count, pct))
     if HTMLfile:
-        HTMLfile.write(TRow % (HClasses[HTMLclass], text, count, pct))
-        HTMLclass ^= 1
+        HTMLfile.write(TRow % (text, count, pct))
 
 def ReportLineStr(text, count, extra):
-    global HTMLclass
     if count == 0:
         return
     Outfile.write ('%-25s %4d %s\n' % (text, count, extra))
     if HTMLfile:
-        HTMLfile.write(TRowStr % (HClasses[HTMLclass], text, count, extra))
-        HTMLclass ^= 1
+        HTMLfile.write(TRowStr % (text, count, extra))
 
 def EndReport():
     if HTMLfile:
