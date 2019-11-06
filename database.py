@@ -111,15 +111,25 @@ def LookupID (id):
         return None
 
 def LookupStoreHacker(name, email, mapunknown = True):
+    #
+    # See if we already know about this email address.
+    #
     email = RemapEmail(email)
     h = LookupEmail(email)
     if h: # already there
         return h
+    #
+    # OK, see if we can map an employer to the domain, and try a
+    # name lookup.
+    #
     elist = LookupEmployer(email, mapunknown)
     h = LookupName(name)
     if h: # new email
         h.addemail(email, elist)
         return h
+    #
+    # Something new, remember it.
+    #
     return StoreHacker(name, elist, email)
 
 
@@ -259,6 +269,7 @@ def MixVirtuals ():
 # The email map.
 #
 EmailAliases = { }
+RXEmailAliases = [ ]
 
 def AddEmailAlias (variant, canonical):
     if EmailAliases.has_key (variant):
@@ -270,7 +281,16 @@ def RemapEmail (email):
     try:
         return EmailAliases[email]
     except KeyError:
-        return email
+        return RXRemapEmail(email)
+
+def AddRXEmailAlias(regex, canonical):
+    RXEmailAliases.append((regex, canonical))
+
+def RXRemapEmail(email):
+    for regex, canonical in RXEmailAliases:
+        if regex.match(email):
+            return canonical
+    return email
 
 #
 # Email-to-employer mapping.

@@ -308,6 +308,16 @@ def grabpatch(logpatch):
             p.addreporter(LookupStoreHacker(m.group(1), email))
             p.author.reportcredit(patch)
             continue
+        #
+        # Syzbot has its own special reported-by that nobody else uses,
+        # and they get somewhat tetchy if we don't recognize them anyway.
+        #
+        m = patterns['reported-by2'].match(Line)
+        if m:
+            email = database.RemapEmail(m.group(1))
+            p.addreporter(LookupStoreHacker(email, email))
+            p.author.reportcredit(patch)
+            continue
         # Reported-and-tested-by:
         m = patterns['reported-and-tested-by'].match(Line)
         if m:
@@ -456,6 +466,7 @@ if AkpmOverLt == 1:
          LookupStoreHacker('Linus Torvalds', 'torvalds@linux-foundation.org'))
     Akpm = ('akpm@linux-foundation.org',
         LookupStoreHacker('Andrew Morton', 'akpm@linux-foundation.org'))
+    LookupStoreHacker('Syzbot', 'syzkaller@googlegroups.com') # XXX
 
 TotalChanged = TotalAdded = TotalRemoved = 0
 

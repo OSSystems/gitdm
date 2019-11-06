@@ -11,7 +11,7 @@
 # Public License, version 2.
 #
 import sys, re, datetime, os.path
-import database
+import database, sre_constants
 
 #
 # Read a line and strip out junk.
@@ -51,6 +51,27 @@ def ReadEmailAliases (name):
         database.AddEmailAlias (m.group (1).replace ('"', ''), m.group (2))
         line = ReadConfigLine (file)
     file.close ()
+
+def ReadRegexpEmailAliases (name):
+    try:
+        file = open (name, 'r')
+    except IOError:
+        croak ('Unable to open regex email alias file %s' % (name))
+    line = ReadConfigLine (file)
+    while line:
+        m = re.match ('^("[^"]+"|\S+)\s+(.+)$', line)
+        if not m or len (m.groups ()) != 2:
+            croak ('Funky email alias line "%s"' % (line))
+        if m and m.group (2).find ('@') <= 0:
+            croak ('Non-addresses in email alias "%s"' % (line))
+        try:
+            regex = re.compile(m.group(1).replace('"', ''))
+        except sre_constants.error:
+            croak('Screwy regex: %s' % (m.group(1)))
+        database.AddRXEmailAlias (regex, m.group (2))
+        line = ReadConfigLine (file)
+    file.close ()
+
 
 #
 # The Email/Employer map
@@ -178,6 +199,8 @@ def ConfigFile (name, confdir):
             croak ('Funky config line: "%s"' % (line))
         if sline[0] == 'EmailAliases':
             ReadEmailAliases (os.path.join (confdir, sline[1]))
+        elif sline[0] == 'RXEmailAliases':
+            ReadRegexpEmailAliases(os.path.join(confdir, sline[1]))
         elif sline[0] == 'EmailMap':
             ReadEmailEmployers (os.path.join (confdir, sline[1]))
         elif sline[0] == 'GroupMap':

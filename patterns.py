@@ -36,6 +36,8 @@ patterns = {
     'reviewed-by': re.compile (r'^\s+Reviewed-by:' + _pemail+ '.*$', re.I),
     'tested-by': re.compile (r'^\s+tested-by:' + _pemail + '.*$', re.I),
     'reported-by': re.compile (r'^\s+Reported-by:' + _pemail + '.*$', re.I),
+    # Syzbot-style reported-by
+    'reported-by2': re.compile (r'^\s+Reported-by:\s+(.+@.+)\s*$', re.I),
     'reported-and-tested-by': re.compile (r'^\s+reported-and-tested-by:' + _pemail + '.*$', re.I),
     #
     # Merges are described with a variety of lines.
