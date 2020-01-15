@@ -171,7 +171,7 @@ def ReadFileType(filename):
         if not patterns.has_key(m.group(1)):
             patterns[m.group(1)] = []
         if m.group(1) not in order:
-            print '%s not found, appended to the last order' % m.group(1)
+            print('%s not found, appended to the last order' % m.group(1))
             order.append(m.group(1))
 
         patterns[m.group(1)].append(re.compile(m.group(2), re.IGNORECASE))

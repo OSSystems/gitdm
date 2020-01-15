@@ -40,7 +40,7 @@ class Hacker:
                 for edate, empl in self.employer[i]:
                     if edate > date:
                         return empl
-        print 'OOPS.  ', self.name, self.employer, self.email, email, date
+        print('OOPS.  ', self.name, self.employer, self.email, email, date)
         return None # Should not happen
 
     def addpatch(self, patch):
@@ -134,12 +134,11 @@ def LookupStoreHacker(name, email, mapunknown = True):
 
 
 def AllHackers():
-    return HackersByID.values()
+    return list(HackersByID.values())
 
 def DumpDB():
     out = open('database.dump', 'w')
-    names = HackersByName.keys()
-    names.sort()
+    names = sorted(HackersByName)
     for name in names:
         h = HackersByName[name]
         out.write('%4d %s %d p (+%d -%d) sob: %d\n' % (h.id, h.name,
@@ -195,7 +194,7 @@ def GetEmployer(name):
         return e
 
 def AllEmployers():
-    return Employers.values()
+    return list(Employers.values())
 
 #
 # Certain obnoxious developers, who will remain nameless (because we
@@ -225,13 +224,13 @@ class VirtualEmployer(Employer):
         self.__init__(name) # Reset counts just in case
 
     def store(self):
-        if Employers.has_key(self.name):
-            print Employers[self.name]
-            sys.stderr.write('WARNING: Virtual empl %s overwrites another\n'
-                              % (self.name))
+        if self.name in Employers:
+            print(Employers[self.name])
+            print('WARNING: Virtual empl %s overwrites another' % (self.name),
+                  file = sys.stderr)
         if len(self.splits) == 0:
-            sys.stderr.write('WARNING: Virtual empl %s has no splits\n'
-                              % (self.name))
+            print('WARNING: Virtual empl %s has no splits' % (self.name),
+                  file = sys.stderr)
             # Should check that they add up too, but I'm lazy
         Employers[self.name] = self
 
@@ -245,7 +244,7 @@ class FileType:
         order = order or self.order
 
         for file_type in order:
-            if patterns.has_key(file_type):
+            if file.type in patterns:
                 for patt in patterns[file_type]:
                     if patt.search(filename):
                         return file_type
@@ -272,7 +271,7 @@ EmailAliases = { }
 RXEmailAliases = [ ]
 
 def AddEmailAlias(variant, canonical):
-    if EmailAliases.has_key(variant):
+    if variant in EmailAliases:
         sys.stderr.write('Duplicate email alias for %s\n' % (variant))
     EmailAliases[variant] = canonical
 
@@ -308,7 +307,7 @@ def AddEmailEmployerMapping(email, employer, end = nextyear):
         for i in range(0, len(l)):
             date, xempl = l[i]
             if date == end:  # probably both nextyear
-                print 'WARNING: duplicate email/empl for %s' % (email)
+                print('WARNING: duplicate email/empl for %s' % (email))
             if date > end:
                 l.insert(i,(end, empl))
                 return
@@ -325,7 +324,7 @@ def MapToEmployer(email, unknown = 0):
         pass
     namedom = email.split('@')
     if len(namedom) < 2:
-        print 'Oops...funky email %s' % email
+        print('Oops...funky email %s' % email)
         return [(nextyear, GetEmployer('Funky'))]
     s = namedom[1].split('.')
     for dots in range(len(s) - 2, -1, -1):
