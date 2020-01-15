@@ -83,13 +83,36 @@ def PrintFirstEmpls():
     for e in empls[:30]:
         print '%5d: %s' % (FirstEmpls[e], e)
     #
-    # We "know" that unknown/none are always the top two...
+    # Make a quick sum of how many first timers were employed
     #
     companies = 0
-    for e in empls[2:]:
-        companies += FirstEmpls[e]
+    for e in empls:
+        if e not in [ '(Unknown)', '(None)' ]:
+            companies += FirstEmpls[e]
     print 'Companies: %d' % (companies)
 
+#
+# Basic stats
+#
+DevsPerVersion = { }
+EmplsPerVersion = { }
+
+def TrackCounts(v, patch):
+    try:
+        DevsPerVersion[v].add(patch.author)
+    except KeyError:
+        DevsPerVersion[v] = set()
+        DevsPerVersion[v].add(patch.author)
+        
+    try:
+        empl = patch.author.emailemployer(patch.email, patch.date)
+    except AttributeError:
+        return
+    try:
+        EmplsPerVersion[v].add(empl)
+    except KeyError:
+        EmplsPerVersion[v] = set()
+        EmplsPerVersion[v].add(empl)
 #
 # Version comparison stuff.  Kernel-specific, obviously.
 #
@@ -99,7 +122,7 @@ def die(gripe):
 
 def versionmap(vers):
     split = vers.split('.')
-    if not (2 <= len(split) <= 4):
+    if not (2 <= len(split) <= 5):
         die('funky version %s' % (vers))
     if split[0] in ['v2', '2']:
         return int(split[2])
@@ -107,6 +130,8 @@ def versionmap(vers):
         return 100 + int(split[1])
     if split[0] in ['v4', '4']:
         return 120 + int(split[1])
+    if split[0] in ['v5', '5']:
+        return 150 + int(split[1])
     die('Funky version %s' % (vers))
 
 T_First = 0
@@ -122,6 +147,16 @@ def SetTrackingVersions(args):
 def TrackingVersion(vers):
     return T_First <= versionmap(vers) <= T_Last
 
+#
+# Count the number of last-patch authors that had the minimum number
+# of versions.
+#
+def CountLasts(hackers):
+    sum = 0
+    for h in hackers:
+        if len(Versions[h.id]) >= args.minversions:
+            sum += 1
+    return sum
 #
 # Main program.
 #
@@ -145,6 +180,7 @@ while patch:
         print 'Funky commit', patch.commit
         patch = gitlog.grabpatch(sys.stdin)
         continue
+    TrackCounts(v, patch)
     #
     # The first patch we see is the last they committed, since git
     # lists things in backwards order.
@@ -176,8 +212,8 @@ for h in database.AllHackers():
             except AttributeError:
                 print 'No email on ', p.commit
                 continue
-            if empl.name == '(Unknown)':
-                print 'UNK: %s %s' % (p.email, h.name)
+#            if empl.name == '(Unknown)':
+#                print 'UNK: %s %s' % (p.email, h.name)
             TrackFirstEmpl(empl.name)
 
 versions = Lasts.keys()
@@ -185,10 +221,16 @@ versions = Lasts.keys()
 def cmpvers(v1, v2):
     return versionmap(v1) - versionmap(v2)  # reverse sort
 versions.sort(cmpvers)
+if args.minversions <= 1:
+    print 'VERS\tFirst\tLast\tSingle\tTotal\tEmpls'
+else:
+    print 'VERS\tFirst\tLast\tTotal\tEmpls'
 for v in versions:
     if args.minversions <= 1:
-        print v, len(Firsts[v]), len(Lasts[v]), Singles[v]
+        print '%s\t%d\t%d\t%d' % (v, len(Firsts[v]), len(Lasts[v]), Singles[v]),
     else:
-        print v, len(Firsts.get(v, [])), len(Lasts.get(v, []))
+        print '%s\t%d\t%d' % (v, len(Firsts.get(v, [])),
+                              CountLasts(Lasts.get(v, []))),
+    print '\t%d\t%d' % (len(DevsPerVersion[v]), len(EmplsPerVersion[v]) - 3)
 PrintFirstDirs()
 PrintFirstEmpls()
