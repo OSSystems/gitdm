@@ -21,8 +21,7 @@ class accumulator:
             return default
 
     def append(self, key, item, unique = False):
-        if unique and self._data.has_key(key) and \
-           item in self._data[key]:
+        if unique and (key in self._data) and (item in self._data[key]):
             return
         try:
             self._data[key].append(item)

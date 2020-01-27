@@ -1,4 +1,4 @@
-#!/usr/bin/pypy
+#!/usr/bin/python3
 # -*- python -*-
 #
 # Crank through the log looking at when developers did their first and
@@ -52,15 +52,15 @@ def TrackFirstDirs(patch):
         except KeyError:
             FirstDirs[dir] = 1
 
-def cmpdirs(d1, d2):
-    return FirstDirs[d2] - FirstDirs[d1]
+def dirkey(d):
+    return FirstDirs[d]
 
 def PrintFirstDirs():
-    print '\nDirectories touched by first commits:'
-    dirs = FirstDirs.keys()
-    dirs.sort(cmpdirs)
+    print('\nDirectories touched by first commits:')
+    dirs = list(FirstDirs.keys())
+    dirs.sort(key = dirkey, reverse = True)
     for dir in dirs[:20]:
-        print '%5d: %s' % (FirstDirs[dir], dir)
+        print('%5d: %s' % (FirstDirs[dir], dir))
 
 #
 # Let's also track who they worked for.
@@ -73,15 +73,15 @@ def TrackFirstEmpl(name):
     except KeyError:
         FirstEmpls[name] = 1
 
-def cmpempls(e1, e2):
-    return FirstEmpls[e2] - FirstEmpls[e1]
+def emplkey(e):
+    return FirstEmpls[e]
 
 def PrintFirstEmpls():
-    empls = FirstEmpls.keys()
-    empls.sort(cmpempls)
-    print '\nEmployers:'
+    empls = list(FirstEmpls.keys())
+    empls.sort(key = emplkey, reverse = True)
+    print('\nEmployers:')
     for e in empls[:30]:
-        print '%5d: %s' % (FirstEmpls[e], e)
+        print('%5d: %s' % (FirstEmpls[e], e))
     #
     # Make a quick sum of how many first timers were employed
     #
@@ -89,7 +89,7 @@ def PrintFirstEmpls():
     for e in empls:
         if e not in [ '(Unknown)', '(None)' ]:
             companies += FirstEmpls[e]
-    print 'Companies: %d' % (companies)
+    print('Companies: %d' % (companies))
 
 #
 # Basic stats
@@ -161,7 +161,7 @@ def CountLasts(hackers):
 # Main program.
 #
 args = SetupArgs()
-VDB = pickle.load(open(args.versiondb, 'r'))
+VDB = pickle.load(open(args.versiondb, 'rb'))
 ConfigFile.ConfigFile(args.config, args.dbdir)
 SetTrackingVersions(args)
 
@@ -172,13 +172,14 @@ Versions = accumulator()
 #
 # Read through the full patch stream and collect the relevant info.
 #
-patch = gitlog.grabpatch(sys.stdin)
+input = open(0, 'rb') # Get a bytes version of stdin
+patch = gitlog.grabpatch(input)
 while patch:
     try:
         v = VDB[patch.commit]
     except KeyError:
-        print 'Funky commit', patch.commit
-        patch = gitlog.grabpatch(sys.stdin)
+        print('Funky commit', patch.commit)
+        patch = gitlog.grabpatch(input)
         continue
     TrackCounts(v, patch)
     #
@@ -191,7 +192,7 @@ while patch:
     patch.author.firstvers = v
     patch.author.addpatch(patch)
     Versions.append(patch.author.id, v, unique = True)
-    patch = gitlog.grabpatch(sys.stdin)
+    patch = gitlog.grabpatch(input)
 
 #
 # Pass over all the hackers we saw and collate stuff.
@@ -210,27 +211,29 @@ for h in database.AllHackers():
             try:
                 empl = h.emailemployer(p.email, p.date)
             except AttributeError:
-                print 'No email on ', p.commit
+                print('No email on ', p.commit)
                 continue
 #            if empl.name == '(Unknown)':
-#                print 'UNK: %s %s' % (p.email, h.name)
+#                print('UNK: %s %s' % (p.email, h.name))
             TrackFirstEmpl(empl.name)
 
-versions = Lasts.keys()
 
-def cmpvers(v1, v2):
-    return versionmap(v1) - versionmap(v2)  # reverse sort
-versions.sort(cmpvers)
+def vkey(vers):
+    return versionmap(vers)
+
+versions = list(Lasts.keys())
+versions.sort(key = vkey)
 if args.minversions <= 1:
-    print 'VERS\tFirst\tLast\tSingle\tTotal\tEmpls'
+    print('VERS\tFirst\tLast\tSingle\tTotal\tEmpls')
 else:
-    print 'VERS\tFirst\tLast\tTotal\tEmpls'
+    print('VERS\tFirst\tLast\tTotal\tEmpls')
 for v in versions:
     if args.minversions <= 1:
-        print '%s\t%d\t%d\t%d' % (v, len(Firsts[v]), len(Lasts[v]), Singles[v]),
+        print('%s\t%d\t%d\t%d' % (v, len(Firsts[v]), len(Lasts[v]), Singles[v]),
+              end = '')
     else:
-        print '%s\t%d\t%d' % (v, len(Firsts.get(v, [])),
-                              CountLasts(Lasts.get(v, []))),
-    print '\t%d\t%d' % (len(DevsPerVersion[v]), len(EmplsPerVersion[v]) - 3)
+        print('%s\t%d\t%d' % (v, len(Firsts.get(v, [])),
+                              CountLasts(Lasts.get(v, []))), end = '')
+    print('\t%d\t%d' % (len(DevsPerVersion[v]), len(EmplsPerVersion[v]) - 3))
 PrintFirstDirs()
 PrintFirstEmpls()

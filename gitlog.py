@@ -3,7 +3,8 @@
 #
 # Someday this will be the only version of grabpatch, honest.
 #
-import re, rfc822, datetime
+import re, datetime
+from email.utils import parsedate
 from patterns import patterns
 import database
 
@@ -23,10 +24,20 @@ def getline(input):
         SavedLine = ''
         return ret
     l = input.readline()
-    if l:
-        return l.rstrip()
-    return None
-
+    if not l:
+        return None
+    #
+    # In theory everything coming out of git is utf8.  In practice,
+    # there's some funky stuff in the kernel repo.  So...fall back
+    # to latin1 if a utf8 decode fails; that doesn't work for everything
+    # but it's about as good as we can do.
+    #
+    try:
+        l = l.decode('utf8')
+    except UnicodeDecodeError:
+        l = l.decode('latin1')
+    return l.rstrip()
+    
 def SaveLine(line):
     global SavedLine
     SavedLine = line
@@ -61,7 +72,7 @@ S_DONE = 5
 def get_header(patch, line, input):
     if line == '':
         if patch.author == '':
-            print 'Funky auth line in', patch.commit
+            print('Funky auth line in', patch.commit)
             patch.author = database.LookupStoreHacker('Unknown',
                                                       'unknown@hacker.net')
         return S_DESC
@@ -72,13 +83,13 @@ def get_header(patch, line, input):
     else:
         m = patterns['date'].match(line)
         if m:
-            dt = rfc822.parsedate(m.group(2))
+            dt = parsedate(m.group(2))
             patch.date = datetime.date(dt[0], dt[1], dt[2])
     return S_HEADER
 
 def get_desc(patch, line, input):
     if not line:
-        print 'Missing desc in', patch.commit
+        print('Missing desc in', patch.commit)
         return S_CHANGELOG
     patch.desc = line
     line = getline(input)
@@ -188,7 +199,7 @@ def grabpatch(input):
         return None
     m = patterns['commit'].match(line)
     if not m:
-        print 'noncommit', line
+        print('noncommit', line)
         return None
     p = patch(m.group(1))
     state = S_HEADER
@@ -199,7 +210,7 @@ def grabpatch(input):
         line = getline(input)
         if line is None:
             if state != S_NUMSTAT:
-                print 'Ran out of patch', state
+                print('Ran out of patch', state)
                 return None
             return p
         state = grabbers[state](p, line, input)
