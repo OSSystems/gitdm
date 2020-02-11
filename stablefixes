@@ -1,4 +1,4 @@
-#!/usr/bin/pypy
+#!/usr/bin/python3
 # -*- python -*-
 #
 # Read through a set of patches and see how many of them are fixes
@@ -21,36 +21,61 @@ import sys, re, subprocess
 Ids = [ ]
 Fixes = [ ]
 FixMap = { }
+Reverts = [ ]
 UpstreamMissing = [ ]
 UpstreamMap = { }
 Npatches = 0
 
 #
 # Patterns to snarf the info we're after.
+# The {6,} in p_fixes is entirely to defend us against 8b9c6b28312cc,
+# which reads "Fixes: 2.3.43".
 #
-p_fixes = re.compile(r'^\s+Fixes:\s+(commit\s+)?([0-9a-f]+).*$')
-p_revert = re.compile(r'This reverts commit ([0-9a-f]+)')
-p_upstream = re.compile(r'commit ([0-9a-f]+) upstream')
-p_upstream2 = re.compile(r'Upstream commit ([0-9a-f]+)')
+p_fixes = re.compile(r'^\s+Fixes:\s+(commit\s+)?([0-9a-f]{6,}).*$')
+p_revert = re.compile(r'This reverts commit ([0-9a-f]+)( +which is)?')
+p_upstream = re.compile(r'commit ([0-9a-f]+) upstream', re.I)
+p_upstream2 = re.compile(r'upstream commit ([0-9a-f]+)', re.I)
 #
 # Snarf the references to other patches.
 #
+def SaveFix(fixer, fixee):
+    for seen in Fixes:
+        if SameCommit(seen, fixer):
+            return
+    Fixes.append(fixer)
+    try:
+        FixMap[fixer].append(fixee)
+    except KeyError:
+        FixMap[fixer] = [ fixee ]
+
 def FindRefs(patch):
+    #
+    # Look for a straightforward Fixes: line.
+    #
     for line in patch.taglines:
         m = p_fixes.match(line)
         if m:
-            Fixes.append(m.group(2))
-            FixMap[m.group(2)] = patch.commit
+            SaveFix(patch.commit, m.group(2))
+    #
+    # Or perhaps this commit is a revert?
+    #
+    whichis = False
     m = p_revert.search(patch.changelog)
     if m:
-        Fixes.append(m.group(1))
-        FixMap[m.group(1)] = patch.commit
-    m = p_upstream.search(patch.changelog) or p_upstream2.search(patch.changelog)
-    if m:
-        Ids.append(m.group(1))
-        UpstreamMap[m.group(1)] = patch.commit
-    else:
-        UpstreamMissing.append(patch.commit)
+        SaveFix(patch.commit, m.group(1))
+        Reverts.append(patch.commit)
+        whichis = m.group(2)
+    #
+    # In any case keep track of upstream patch corresponding to this one.  But be
+    # careful about "this reverts ... which is ... upstream"
+    #
+    if not whichis:
+        m = p_upstream.search(patch.changelog) or p_upstream2.search(patch.changelog)
+        if m:
+            Ids.append(m.group(1))
+            UpstreamMap[m.group(1)] = patch.commit
+        else:
+            UpstreamMissing.append(patch.commit)
 
 #
 # See if two commit IDs match.
@@ -70,12 +95,12 @@ def StableURL(id):
 #
 # Get the version for a commit
 #
-repo = '/k/git/linux-2.6'
+repo = '/k/git/kernel'
 def find_version(commit):
-    command = ['git', 'describe', '--contains', commit]
+    command = ['git', 'describe', '--contains', commit, '--match', 'v*']
     p = subprocess.Popen(command, cwd = repo, stdout = subprocess.PIPE,
                          bufsize = 1)
-    desc = p.stdout.readline()
+    desc = p.stdout.readline().decode('utf8')
     p.wait()
     #
     # The description line has the form:
@@ -93,39 +118,71 @@ def trim(commit):
 #
 # Go through the patch stream.
 #
-patch = gitlog.grabpatch(sys.stdin)
+input = open(0, 'rb')
+patch = gitlog.grabpatch(input)
 while patch:
     Npatches += 1
     Ids.append(patch.commit)
     FindRefs(patch)
-    patch = gitlog.grabpatch(sys.stdin)
+    patch = gitlog.grabpatch(input)
 
-print 'Found %d patches, %d fixes' % (Npatches, len(Fixes))
-print '%d had no upstream reference' % (len(UpstreamMissing))
+TableHdr = '''<tr><th rowspan=2>Type</th>
+		  <th colspan=2>Introduced</th>
+                  <th colspan=2>Fixed</th></tr>
+              <tr><th>Release</th><th>Commit</th><th>Release</th><th>Commit</th></tr>
+'''
 
 #
 # Now see how many fixes have been seen before.
 #
 out = open('stable-fixes.html', 'w')
+out.write('<!-- Found %d patches, %d fixes, %d reverts -->\n' % (Npatches, len(Fixes), len(Reverts)))
+out.write('<!-- %d had no upstream reference -->\n' % (len(UpstreamMissing)))
 out.write('<table class="OddEven">\n')
-nfound = 0
-
-Ids.reverse()
-for id in Ids:
-    for fix in Fixes:
-        if SameCommit(fix, id):
+out.write(TableHdr)
+fixed_in_same = nfound = 0
+#
+# Go through all of the commit IDs we've seen (both stable and upstream)
+# in reverse-time order.
+#
+def StablePatch(commit):
+    for id in Ids:
+        if SameCommit(commit, id):
             try:
-                id = UpstreamMap[id]
+                return UpstreamMap[id]
             except KeyError:
-                pass
-            fixer = FixMap[fix]
-            out.write('<tr><td>%s</td>\n'
-                      '<td><a href="%s"><tt>%s</tt></a></td>\n'
-                      '<td>%s</td>\n'
-                      '<td><a href="%s"><tt>%s</tt></a></td></tr>\n'
-                      % (find_version(id), StableURL(id), trim(id),
-                         find_version(fixer), StableURL(fixer), trim(fixer)))
-            nfound += 1
+                return id
+    return None
+
+Fixes.reverse()
+for i in range(0, len(Fixes)):
+    if (i % 50) == 0:
+        print('Checking %d/%d, found %d   ' % (i, len(Fixes), nfound), end = '\r')
+        sys.stdout.flush()
+    fix = Fixes[i]
+    #
+    # We know we have a fix, but does it fix something that showed up in stable?
+    #
+    for fixed in FixMap[fix]:
+        fixed = StablePatch(fixed)
+        if fixed is None:
+            continue
+        v_id = find_version(fixed)
+        v_fixer = find_version(fix)
+        type = 'Fix'
+        if fix in Reverts:
+            type = 'Revert'
+        out.write('<tr><td>%s</td><td>%s</td>\n'
+                  '<td><a href="%s"><tt>%s</tt></a></td>\n'
+                  '<td>%s</td>\n'
+                  '<td><a href="%s"><tt>%s</tt></a></td></tr>\n'
+                  % (type, v_id, StableURL(fixed), trim(fixed),
+                     v_fixer, StableURL(fix), trim(fix)))
+        if v_id == v_fixer:
+            fixed_in_same += 1
+        nfound += 1
 out.write('</table>')
+out.write('<!-- Found %d refixes, %d in same release -->\n' % (nfound,
+                                                               fixed_in_same))
 out.close()
-print 'Found %d refixes' % (nfound)
+print()
