@@ -42,7 +42,7 @@ patterns = {
     #
     # Merges are described with a variety of lines.
     #
-    'ExtMerge': re.compile(r'^ +Merge( (branch|branches|tag|tags) .* of)? ([^ ]+:[^ ]+)( into .*)?\n$'),
+    'ExtMerge': re.compile(r'^ +Merge( (branch|branches|tag|tags) .* of)? ([^ ]+:[^ ]+)( into .*)?$'),
     'IntMerge': re.compile(r'(Merge|Pull) .* into .*$'),
     # PIntMerge2 = re.compile(r"^ +Merge branch(es)? '.*$"),
     'IntMerge2': re.compile(r"^ +Merge .*$"),
