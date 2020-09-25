@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 #
 # git log --pretty="%H %P" | this program
 # See option descriptions at bottom
@@ -23,13 +23,13 @@ IntMerge2 = patterns.patterns['IntMerge2']
 Mergelist = { }
 
 class Merge:
-    def __init__(self, id, tree = None):
+    def __init__(self, id, tree = None, signed = False):
         self.id = id
         self.commits = [ ]
         self.merges = [ ]
         self.tree = tree or '?'
         self.internal = False
-        self.signed = False
+        self.signed = signed
         if tree is None:
             self.getdesc()
         Mergelist[id] = self
@@ -45,8 +45,8 @@ class Merge:
 
     def getdesc(self):
         command = ['git', 'log', '-1', '--show-signature', self.id]
-        p = subprocess.Popen(command, cwd = Repo, stdout = subprocess.PIPE,
-                             bufsize = 1)
+        p = subprocess.run(command, cwd = Repo, capture_output = True,
+                           encoding='utf8')
         #
         # Sometimes we don't match a pattern; that means that the
         # committer radically modified the merge message.  A certain
@@ -55,7 +55,7 @@ class Merge:
         # best response is to treat it like an internal merge.
         #
         self.internal = True
-        for line in p.stdout.readlines():
+        for line in p.stdout.split('\n'):
             #
             # Note if there's a GPG signature
             #
@@ -77,7 +77,6 @@ class Merge:
             if m:
                 self.internal = True
                 break
-        p.wait()
             
     def add_commit(self, id):
         self.commits.append(id)
@@ -110,7 +109,7 @@ def ingest_commits(src):
             sys.stderr.flush()
         expected = sline[1]
         last_merge = mc
-    print
+    print()
 #
 # Figure out which merge brought in a commit.
 #
@@ -118,10 +117,9 @@ MergeIDs = { }
 
 def find_merge(commit):
     command = ['git', 'describe', '--contains', commit]
-    p = subprocess.Popen(command, cwd = Repo, stdout = subprocess.PIPE,
-                         bufsize = 1)
-    desc = p.stdout.readline().decode('utf8')
-    p.wait()
+    p = subprocess.run(command, cwd = Repo, capture_output = True,
+                       encoding = 'utf8')
+    desc = p.stdout.strip()
     #
     # The description line has the form:
     #
@@ -145,9 +143,9 @@ def find_merge(commit):
     # Nope, we have to dig it out the hard way.
     #
     command = ['git', 'log', '--pretty=%H', '-1', desc[:uparrow]]
-    p = subprocess.Popen(command, cwd = Repo, stdout = subprocess.PIPE,
-                         bufsize = 1)
-    merge = p.stdout.readline().decode('utf8').strip()
+    p = subprocess.run(command, cwd = Repo, capture_output = True,
+                       encoding = 'utf8')
+    merge = p.stdout.strip()
     #
     # If we get back the same commit, we're looking at one of Linus's
     # version number tags.
@@ -155,7 +153,6 @@ def find_merge(commit):
     if merge == commit:
         merge = 'mainline'
     MergeIDs[desc[:uparrow]] = merge
-    p.wait()
     return merge
 
 #
@@ -189,6 +186,7 @@ Treecounts = { }
 SignedTrees = set()
 
 def tree_stats(merge):
+    SignedTrees.add('mainline')
     try:
         tcount = Treecounts[merge.tree]
     except KeyError:
@@ -206,7 +204,7 @@ def tree_stats(merge):
 def trim_trees(limit):
     srcs = Treecounts['mainline']
     srcnames = srcs.keys()
-    srcnames.sort(lambda t1, t2: srcs[t2] - srcs[t1])
+    srcnames = sorted(srcnames, key = lambda i: srcs[i], reverse = True)
     nextra = len(srcnames) - limit
     zapped = 0
     for extra in srcnames[limit:]:
@@ -222,9 +220,9 @@ def dumptree(start, indent = ''):
     int = ''
     if start.internal:
         int = 'I: '
-    print '%s%s%s: %d/%d %s' % (indent, int, start.id[:10],
-                                len(start.merges), len(start.commits),
-                                start.tree)
+    print('%s%s%s: %d/%d %s' % (indent, int, start.id[:10],
+                                 len(start.merges), len(start.commits),
+                                 start.tree))
     for merge in start.merges:
         dumptree(merge, indent + '  ')
 
@@ -233,18 +231,31 @@ def dumpflow(tree, indent = '', seen = []):
         srcs = Treecounts[tree]
     except KeyError:
         return
-    srctrees = srcs.keys()
-    srctrees.sort(lambda t1, t2: srcs[t2] - srcs[t1])
+    srctrees = sorted(srcs.keys(), key = lambda i: srcs[i], reverse = True)
     for src in srctrees:
         if src in seen:
-            print 'Skip', src, srcs[src], seen
+            print('Skip', src, srcs[src], seen)
         else:
             if src in SignedTrees:
-                print '%s%4d ** %s' % (indent, srcs[src], src)
+                print('%s%4d ** %s' % (indent, srcs[src], src))
             else:
-                print '%s%4d %s' % (indent, srcs[src], src)
+                print('%s%4d %s' % (indent, srcs[src], src))
             dumpflow(src, indent = indent + '  ', seen = seen + [tree])
 
+def totalsignedstats(tree, signed = [ ], unsigned = [ ]):
+    try:
+        srcs = Treecounts[tree]
+    except KeyError:
+        return 0
+    for src in sorted(srcs.keys(), key = lambda i: srcs[i], reverse = True):
+        if (src in signed) or (src in unsigned):
+            continue
+        if src in SignedTrees:
+            signed.append(src)
+        else:
+            unsigned.append(src)
+        return 'stopped here'
+    
 def SigStats(tree):
     srcs = Treecounts[tree]
     spulls = upulls = scommits = ucommits = 0
@@ -255,9 +266,11 @@ def SigStats(tree):
         else:
             upulls += 1
             ucommits += srcs[src]
-    print '%d repos total, %d signed, %d unsigned' % (spulls + upulls,
-                                                      spulls, upulls)
-    print '   %d commits from signed, %d from unsigned' % (scommits, ucommits)
+    print('%d repos total, %d signed, %d unsigned' % (spulls + upulls,
+                                                      spulls, upulls))
+    print('   %d commits from signed, %d from unsigned' % (scommits, ucommits))
+    print(len(srcs))
+    print(len(SignedTrees), len(Treecounts.keys()))
 
 #
 # Graphviz.
@@ -296,8 +309,7 @@ def GV_out_node(graph, node, seen = []):
         srcs = Treecounts[node]
     except KeyError:  # "applied by linus"
         return
-    srctrees = srcs.keys()
-    srctrees.sort(lambda t1, t2: srcs[t2] - srcs[t1])
+    srctrees = sorted(srcs.keys(), key = lambda i: srcs[i], reverse = True)
     for src in srctrees:
         if src not in seen:
             graph.edge(GV_fixname(src), GV_fixname(node),
@@ -313,8 +325,7 @@ def GV_out_node_signed(graph, node, seen = []):
         srcs = Treecounts[node]
     except KeyError:  # "applied by linus"
         return
-    srctrees = srcs.keys()
-    srctrees.sort(lambda t1, t2: srcs[t2] - srcs[t1])
+    srctrees = sorted(srcs.keys(), key = lambda i: srcs[i], reverse = True)
     for src in srctrees:
         color = 'red'
         if src in SignedTrees:
@@ -361,15 +372,15 @@ DoSigned = args.signed
 # Find our commits.
 #
 if args.load:
-    dumpfile = open(args.load, 'r')
+    dumpfile = open(args.load, 'rb')
     Mergelist = pickle.loads(dumpfile.read())
     dumpfile.close
     Mainline = Mergelist['mainline']
 else:
-    Mainline = Merge('mainline', tree = 'mainline')
+    Mainline = Merge('mainline', tree = 'mainline', signed = True)
     ingest_commits(sys.stdin)
     if args.dump:
-        dumpfile = open(args.dump, 'w')
+        dumpfile = open(args.dump, 'wb')
         dumpfile.write(pickle.dumps(Mergelist))
         dumpfile.close()
 #
@@ -379,11 +390,11 @@ else:
 zorch_internals(Mainline)
 #dumptree(Mainline)
 Treecounts['mainline'] = { 'Applied by Linus': len(Mainline.commits) }
-print 'total commits', count_commits(Mainline)
+print('total commits', count_commits(Mainline))
 tree_stats(Mainline)
 if args.trim:
     trim_trees(args.trim)
-print 'Tree flow'
+print('Tree flow')
 dumpflow('mainline')
 if args.gvoutput:
     GV_out(args.gvoutput)
