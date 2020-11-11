@@ -186,10 +186,21 @@ while patch:
     # The first patch we see is the last they committed, since git
     # lists things in backwards order.
     #
-    if len(patch.author.patches) == 0:
+    # ... except, of course, that life is not so simple, and git can
+    # present patches in different orders at different times, so we
+    # just have to compare versions.
+    #
+    mapv = versionmap(v)
+    try:
+        if mapv < versionmap(patch.author.firstvers):
+            patch.author.firstvers = v
+    except AttributeError:
+        patch.author.firstvers = v
+    try:
+        if mapv > versionmap(patch.author.lastvers):
+            patch.author.lastvers = v
+    except AttributeError:
         patch.author.lastvers = v
-        Lasts.append(v, patch.author)
-    patch.author.firstvers = v
     patch.author.addpatch(patch)
     Versions.append(patch.author.id, v, unique = True)
     patch = gitlog.grabpatch(input)
@@ -200,6 +211,7 @@ while patch:
 for h in database.AllHackers():
     if len(h.patches) > 0 and len(Versions[h.id]) >= args.minversions:
         Firsts.append(h.firstvers, h)
+        Lasts.append(h.lastvers, h)
         if h.firstvers == h.lastvers:
             Singles.incr(h.firstvers)
         #
