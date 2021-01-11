@@ -244,7 +244,7 @@ class FileType:
         order = order or self.order
 
         for file_type in order:
-            if file.type in patterns:
+            if file_type in patterns:
                 for patt in patterns[file_type]:
                     if patt.search(filename):
                         return file_type
