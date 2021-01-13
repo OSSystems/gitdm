@@ -27,6 +27,7 @@
 #	--nf to include subsystems with no files
 #	-o to sort by oldest first
 #	--select=never to list subsystems w/no maint activity at all
+#       --select=nomaints to see subsystems with no listed maintainer
 #
 # Finally, look for subsystems with no maintainer activity but a lot of patches:
 #
@@ -293,7 +294,7 @@ def setupargs():
     sp.add_argument('-o', '--oldest', help = 'Sort oldest first', action = 'store_true',
                     default = False)
     sp.add_argument('-s', '--select', help = 'Filter for subsys to display',
-                    choices = ['never'], default = None)
+                    choices = ['never', 'nomaints'], default = None)
     sp.set_defaults(handler = cmd_dump)
     #
     # urgent - find unmaintained subsystems with activity
@@ -301,6 +302,8 @@ def setupargs():
     sp = subs.add_parser('urgent')
     sp.add_argument('-c', '--commits', help = 'How many commits since ref',
                     default = 42, type = int)
+    sp.add_argument('-H', '--html', help = 'Dump in HTML', action = 'store_true',
+                    default = False)
     sp.add_argument('-l', '--load', help = 'Load data from pickle file',
                    default = 'maintainers.pickle')
     sp.add_argument('-m', '--months', type = int,
@@ -365,9 +368,25 @@ def dump_pdate(date):
 def git_url(commit):
     return 'https://git.kernel.org/linus/' + commit
 
+nameonly = re.compile(r'"?([^<"]+)"?\s+(<.*>)?')
+def fixup_maint_name(name):
+    m = nameonly.match(name)
+    if m:
+        return m.group(1)
+    return name
+
+RClass = "Odd" # XXX
+def rowclass():
+    global RClass
+    if RClass == 'Odd':
+        RClass = 'Even'
+    else:
+        RClass = 'Odd'
+    return f'"{RClass}"'
+
 def dump_subsys_html(ss):
     span = max(1, len(ss.maints))
-    print(f'''<tr>
+    print(f'''<tr class={rowclass()}>
     	<td valign="top" rowspan={span}>{ss.name}</td>
         <td valign="top" rowspan={span}>{dump_pdate(ss.last_activity)}</td>''')
     if not ss.maints:
@@ -377,14 +396,14 @@ def dump_subsys_html(ss):
     for m in ss.maints:
         mi = ss.mdata[m]
         if not mi:
-            die(f'Null MI in subsys {ss.name} {m}')
-        print(f'\t{rowstart}<td>{m}</td>')
+            mi = { 'author': None, 'committer': None, 'tags': None}
+        print(f'\t{rowstart}<td valign="top">{fixup_maint_name(m)}</td>')
         for type in ['author', 'committer', 'tags']:
             if mi[type]:
                 commit, date = mi[type]
-                print(f'\t  <td><a href="{git_url(commit)}">{dump_pdate(date)}</a></td>')
+                print(f'\t  <td valign="top"><a href="{git_url(commit)}">{dump_pdate(date)}</a></td>')
             else:
-                print('\t  <td>——</td>')
+                print('\t  <td valign="top">——</td>')
         print('</tr>')
         rowstart = '<tr>'
 
@@ -404,6 +423,8 @@ def cmd_dump(args):
         subs = [sub for sub in subs if Subsystems[sub].files]
     if args.select == 'never':
         subs = [sub for sub in subs if Subsystems[sub].last_activity is None]
+    elif args.select == 'nomaints':
+        subs = [sub for sub in subs if not Subsystems[sub].maints]
     if args.oldest:
         subs = sorted(subs, key = date_key)
     if args.html:
@@ -440,7 +461,6 @@ def get_commit_count(subsys, ref):
     return count
 
 def cmd_urgent(args):
-    print(args.repository)
     os.chdir(args.repository)
     load_pickle(args.load)
     #
@@ -453,11 +473,23 @@ def cmd_urgent(args):
     #
     # Now, for each one, see how many patches exist during the ref period.
     #
+    if args.html:
+        print('<table class="OddEven">')
+        print('<tr><th>Subsystem</th><th>Activity</th><th>Commits</th></tr>')
     for sub in subs:
         ss = Subsystems[sub]
         commits = get_commit_count(ss, args.ref)
         if commits >= args.commits:
-            print(f'{ss.name}: {commits}')
+            if ss.last_activity:
+                activity = ss.last_activity.strftime('%Y-%m-%d')
+            else:
+                activity = '——'
+            if args.html:
+                print(f'<tr><td>{ss.name}</td><td>{activity}</td><td>{commits}</td></tr>')
+            else:
+                print(f'{ss.name}: {activity} {commits}')
+    if args.html:
+        print('</table>')
 #
 # Main program
 #
