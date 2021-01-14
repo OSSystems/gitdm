@@ -386,7 +386,8 @@ def rowclass():
 
 def dump_subsys_html(ss):
     span = max(1, len(ss.maints))
-    print(f'''<tr class={rowclass()}>
+    rc = rowclass()
+    print(f'''<tr class={rc}>
     	<td valign="top" rowspan={span}>{ss.name}</td>
         <td valign="top" rowspan={span}>{dump_pdate(ss.last_activity)}</td>''')
     if not ss.maints:
@@ -405,7 +406,7 @@ def dump_subsys_html(ss):
             else:
                 print('\t  <td valign="top">——</td>')
         print('</tr>')
-        rowstart = '<tr>'
+        rowstart = f'<tr class={rc}>'
 
 def load_pickle(pfile):
     global Subsystems
