@@ -345,3 +345,11 @@ def LookupEmployer(email, mapunknown = 0):
     elist = MapToEmployer(email, mapunknown)
     return elist # GetEmployer(ename)
 
+#
+# Make sure aliases don't mask other entries.
+#
+def CheckAliases():
+    for email in EmailToEmployer:
+        remapped = RemapEmail(email)
+        if email != remapped:
+            print(f'WARNING: {email} is masked by an alias entry ({remapped})')

@@ -457,7 +457,7 @@ ParseOpts()
 # Read the config files.
 #
 ConfigFile.ConfigFile(CFName, DirName)
-
+database.CheckAliases()
 #
 # Let's pre-seed the database with a couple of hackers
 # we want to remember.
