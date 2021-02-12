@@ -1,4 +1,4 @@
-#!/usr/bin/pypy
+#!/usr/bin/python
 #
 # Find out how many lines were introduced in each major release.
 #
@@ -12,44 +12,49 @@
 # This file may be distributed under the terms of the GNU General
 # Public License, version 2.
 #
-import sys, re, os, pickle
+import sys, re, os, pickle, subprocess
 
 CommitLines = { }
 
 commitpat = re.compile(r'^([\da-f][\da-f]+) ')
 
 def GetCommitLines(file):
-    print file
-    blame = os.popen('git blame -p ' + file, 'r')
-    for line in blame.readlines():
-        m = commitpat.search(line)
-        #
-        # All-zero commits mean we got fed a file that git doesn't
-        # know about.  We could throw an exception and abort processing
-        # now, or we can just silently ignore it...
-        #
-        if not m or m.group(1) == '0000000000000000000000000000000000000000':
-            continue
-        try:
-            CommitLines[m.group(1)] += 1
-        except KeyError:
-            CommitLines[m.group(1)] = 1
-    blame.close()
+    print(file)
+    # blame = os.popen('git blame -p ' + file, 'rb')
+    with subprocess.Popen(['/usr/bin/git', 'blame', '-p', file],
+                          stdout = subprocess.PIPE) as blame:
+        for line in blame.stdout.readlines():
+            try:
+                line = line.decode('utf8')
+            except UnicodeDecodeError:
+                print('Bad line in %s:\n\t %s' % (file, line.decode('latin1')))
+                continue
+            m = commitpat.search(line)
+            #
+            # All-zero commits mean we got fed a file that git doesn't
+            # know about.  We could throw an exception and abort processing
+            # now, or we can just silently ignore it...
+            #
+            if not m or m.group(1) == '0000000000000000000000000000000000000000':
+                continue
+            try:
+                CommitLines[m.group(1)] += 1
+            except KeyError:
+                CommitLines[m.group(1)] = 1
 
 #
 # Try to figure out which tag is the first to contain each commit.
 #
-refpat = re.compile(r'^(v2\.6\.\d\d).*$')
 def CommitToTag(commit):
     try:
         return DB[commit]
     except KeyError:
-        print 'Missing commit %s' % (commit)
+        print('Missing commit %s' % (commit))
         return 'WTF?'
 
 TagLines = { }
 def MapCommits():
-    print 'Mapping tags...'
+    print('Mapping tags...')
     for commit in CommitLines.keys():
         tag = CommitToTag(commit)
         try:
@@ -66,7 +71,7 @@ if len(sys.argv) != 2:
 #
 # Grab the tags/version database.
 #
-dbf = open('committags.db', 'r')
+dbf = open('committags.db', 'rb')
 DB = pickle.load(dbf)
 dbf.close()
 
@@ -77,9 +82,7 @@ for file in files.readlines():
     if file.find('.git/') < 0:
         GetCommitLines(file[:-1])
 MapCommits()
-# print TagLines
-tags = TagLines.keys()
-tags.sort()
+tags = sorted(TagLines.keys())
 for tag in tags:
     out.write('%s %d\n' % (tag, TagLines[tag]))
 out.close()
