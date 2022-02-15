@@ -4,7 +4,7 @@
 # Read through a set of patches and see how many of them are fixes
 # for prior patches.
 #
-#   git log master..stable | stablefixes
+#   git log --decorate master..stable | stablefixes
 #
 # As with most gitdm stuff, this has been developed to the point where it
 # solved the immediate task and no further.  I hope it's useful, but can
@@ -18,13 +18,29 @@
 import gitlog
 import sys, re, subprocess
 
-Ids = [ ]
+Ids = set()
 Fixes = [ ]
 FixMap = { }
 Reverts = [ ]
 UpstreamMissing = [ ]
 UpstreamMap = { }
 Npatches = 0
+
+#
+# Track version tags as we go.
+#
+def canonID(id):
+    return id[:10]
+
+PatchVersions = {}
+
+def AddVersion(commit, version):
+    PatchVersions[canonID(commit)] = version
+def GetVersion(commit):
+    try:
+        return PatchVersions[canonID(commit)]
+    except KeyError:
+        return 'unknown'
 
 #
 # Patterns to snarf the info we're after.
@@ -39,31 +55,30 @@ p_upstream2 = re.compile(r'upstream commit ([0-9a-f]+)', re.I)
 # Snarf the references to other patches.
 #
 def SaveFix(fixer, fixee):
-    for seen in Fixes:
-        if SameCommit(seen, fixer):
-            return
-    Fixes.append(fixer)
+    if fixer not in Fixes:
+        Fixes.append(fixer)
     try:
-        FixMap[fixer].append(fixee)
+        if fixee not in FixMap[fixer]:
+            FixMap[fixer].append(fixee)
     except KeyError:
         FixMap[fixer] = [ fixee ]
 
-def FindRefs(patch):
+def FindRefs(commit, patch):
     #
     # Look for a straightforward Fixes: line.
     #
     for line in patch.taglines:
         m = p_fixes.match(line)
         if m:
-            SaveFix(patch.commit, m.group(2))
+            SaveFix(commit, canonID(m.group(2)))
     #
     # Or perhaps this commit is a revert?
     #
     whichis = False
     m = p_revert.search(patch.changelog)
     if m:
-        SaveFix(patch.commit, m.group(1))
-        Reverts.append(patch.commit)
+        SaveFix(commit, canonID(m.group(1)))
+        Reverts.append(commit)
         whichis = m.group(2)
     #
     # In any case keep track of upstream patch corresponding to this one.  But be
@@ -72,18 +87,10 @@ def FindRefs(patch):
     if not whichis:
         m = p_upstream.search(patch.changelog) or p_upstream2.search(patch.changelog)
         if m:
-            Ids.append(m.group(1))
-            UpstreamMap[m.group(1)] = patch.commit
+            Ids.add(canonID(m.group(1)))
+            UpstreamMap[canonID(m.group(1))] = commit
         else:
-            UpstreamMissing.append(patch.commit)
-
-#
-# See if two commit IDs match.
-#
-def SameCommit(c1, c2):
-    l = min(len(c1), len(c2))
-    return c1[:l] == c2[:l]
-
+            UpstreamMissing.append(commit)
 #
 # What's the URL of a patch in the stable tree?
 #
@@ -92,38 +99,23 @@ SBase = 'https://git.kernel.org/cgit/linux/kernel/git/stable/' + \
 def StableURL(id):
     return SBase + id
 
-#
-# Get the version for a commit
-#
-repo = '/k/git/kernel'
-def find_version(commit):
-    command = ['git', 'describe', '--contains', commit, '--match', 'v*']
-    p = subprocess.Popen(command, cwd = repo, stdout = subprocess.PIPE,
-                         bufsize = 1)
-    desc = p.stdout.readline().decode('utf8')
-    p.wait()
-    #
-    # The description line has the form:
-    #
-    #      tag~N^M~n...
-    #
-    tilde = desc.find('~')
-    if tilde < 0:
-        return desc
-    return desc[:tilde]
-
 def trim(commit):
     return commit[:16]
 
 #
 # Go through the patch stream.
 #
+release = 'unknown'
 input = open(0, 'rb')
 patch = gitlog.grabpatch(input)
 while patch:
+    if patch.tag:
+        release = patch.tag
     Npatches += 1
-    Ids.append(patch.commit)
-    FindRefs(patch)
+    commit = canonID(patch.commit)
+    Ids.add(commit)
+    AddVersion(commit, release)
+    FindRefs(commit, patch)
     patch = gitlog.grabpatch(input)
 
 TableHdr = '''<tr><th rowspan=2>Type</th>
@@ -146,12 +138,11 @@ fixed_in_same = nfound = 0
 # in reverse-time order.
 #
 def StablePatch(commit):
-    for id in Ids:
-        if SameCommit(commit, id):
-            try:
-                return UpstreamMap[id]
-            except KeyError:
-                return id
+    if commit in Ids:
+        try:
+            return UpstreamMap[commit]
+        except KeyError:
+            return commit
     return None
 
 Fixes.reverse()
@@ -167,8 +158,8 @@ for i in range(0, len(Fixes)):
         fixed = StablePatch(fixed)
         if fixed is None:
             continue
-        v_id = find_version(fixed)
-        v_fixer = find_version(fix)
+        v_id = GetVersion(fixed)
+        v_fixer = GetVersion(fix)
         type = 'Fix'
         if fix in Reverts:
             type = 'Revert'
