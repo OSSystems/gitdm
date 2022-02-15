@@ -190,6 +190,7 @@ class patch:
         self.removed += removed
         self.files.append(file)
 
+tag = re.compile('\(tag: (v[.\d]+)\)')
 def grabpatch(input):
     #
     # If it's not a patch something is screwy.
@@ -203,6 +204,14 @@ def grabpatch(input):
         return None
     p = patch(m.group(1))
     state = S_HEADER
+    #
+    # Look for a tag on this line.  BUG fails with two tags
+    #
+    m = tag.search(line)
+    if m:
+        patch.tag = m.group(1)
+    else:
+        patch.tag = None
     #
     # Crank through the patch.
     #
