@@ -19,7 +19,7 @@ def CheckFile(file):
     git = os.popen('git log --pretty=oneline -1 ' + file, 'r')
     line = git.readline()
     if line.startswith(OriginalSin):
-        print file
+        print(file)
     git.close()
 #
 # Here we just plow through all the files.
