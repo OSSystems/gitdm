@@ -146,6 +146,8 @@ def StablePatch(commit):
     return None
 
 Fixes.reverse()
+buggy = set()
+buggy_different = set()
 for i in range(0, len(Fixes)):
     if (i % 50) == 0:
         print('Checking %d/%d, found %d   ' % (i, len(Fixes), nfound), end = '\r')
@@ -158,6 +160,7 @@ for i in range(0, len(Fixes)):
         fixed = StablePatch(fixed)
         if fixed is None:
             continue
+        buggy.add(fixed)
         v_id = GetVersion(fixed)
         v_fixer = GetVersion(fix)
         type = 'Fix'
@@ -171,9 +174,12 @@ for i in range(0, len(Fixes)):
                      v_fixer, StableURL(fix), trim(fix)))
         if v_id == v_fixer:
             fixed_in_same += 1
+        else:
+            buggy_different.add(fixed)
         nfound += 1
 out.write('</table>')
-out.write('<!-- Found %d refixes, %d in same release -->\n' % (nfound,
-                                                               fixed_in_same))
+out.write('<!-- Found %d/%d/%d refixes, %d in same release -->\n' % (nfound, len(buggy),
+                                                                     len(buggy_different),
+                                                                     fixed_in_same))
 out.close()
 print()
