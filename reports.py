@@ -14,6 +14,7 @@ import sys
 
 Outfile = sys.stdout
 HTMLfile = None
+rSTfile = None
 ListCount = 999999
 
 
@@ -24,6 +25,10 @@ def SetOutput(file):
 def SetHTMLOutput(file):
     global HTMLfile
     HTMLfile = file
+
+def SetrSTOutput(file):
+    global rSTfile
+    rSTfile = file
 
 def SetMaxList(max):
     global ListCount
@@ -40,10 +45,21 @@ THead = '''<p>
 <tr><th colspan=3>%s</th></tr>
 '''
 
+RHead = '''
+.. table:: %s
+   :widths: auto
+
+   ====================================  =====
+   Name                                  Count
+   ====================================  =====
+'''
+
 def BeginReport(title):
     Outfile.write('\n%s\n' % title)
     if HTMLfile:
         HTMLfile.write(THead % title)
+    if rSTfile:
+        rSTfile.write(RHead % title)
 
 TRow = ' <tr><td>%s</td><td align="right">%d</td><td align="right">%.1f%%</td></tr>\n'
 TRowStr = ' <tr><td>%s</td><td align="right">%d</td><td>%s</td></tr>\n'
@@ -54,6 +70,8 @@ def ReportLine(text, count, pct):
     Outfile.write ('%-25s %4d (%.1f%%)\n' % (text, count, pct))
     if HTMLfile:
         HTMLfile.write(TRow % (text, count, pct))
+    if rSTfile:
+        rSTfile.write("   %-36s  %d (%.1f%%)\n" % (text.strip(), count, pct))
 
 def ReportLineStr(text, count, extra):
     if count == 0:
@@ -61,10 +79,14 @@ def ReportLineStr(text, count, extra):
     Outfile.write ('%-25s %4d %s\n' % (text, count, extra))
     if HTMLfile:
         HTMLfile.write(TRowStr % (text, count, extra))
+    if rSTfile:
+        rSTfile.write('%-36s %d %s\n' % (text, count, extra))
 
 def EndReport():
     if HTMLfile:
         HTMLfile.write('</table>\n\n')
+    if rSTfile:
+        rSTfile.write('   ====================================  =====\n\n')
         
 #
 # Comparison and report generation functions.
