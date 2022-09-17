@@ -5,13 +5,13 @@ repository.
 
 INSTALLING GITDM
 
-gitdm is a python script and doesn't need to be proper installed like other
+gitdm is a python script and doesn't need to be properly installed like other
 normal programs. You just have to adjust your PATH variable, pointing it to
 the directory of gitdm or alternatively create a symbolic link of the script
 inside /usr/bin.
 
-Before actually run gitdm you may want also to update the configuration file
-(gitdm.config) with the needed information.
+Before actually runnning gitdm you may want also to update the configuration
+file (gitdm.config) with the needed information.
 
 
 RUNNING GITDM
@@ -39,43 +39,45 @@ be:
          	only.
 
 	-D	Rather than create the usual statistics, create a file (datelc.csv)
-	    providing lines changed per day, where the first column displays
-	    the changes happened only on that day and the second sums the day it
-	    happnened with the previous ones. This option is suitable for
-	    feeding to a tool like gnuplot.
+		providing lines changed per day, where the first column displays
+		the changes happened only on that day and the second sums the day
+		it happnened with the previous ones. This option is suitable for
+		feeding to a tool like gnuplot.
 
 	-h file	Generate HTML output to the given file
 
+	-H file	Export individual developer raw data as CSV. These data could be
+		used to evaluate the fidelity of developers.
+
 	-l num	Only list the top <num> entries in each report.
 
-    -n  Use --numstat instead of generated patches to get the statistics.
+	-n	Use --numstat instead of generated patches to get the statistics.
 
 	-o file	Write text output to the given file (default is stdout).
 
-    -p prefix Dump out the database categorized by changeset and by file type.
-	    It requires -n, otherwise it is not possible to get separated results.
+	-p prefix Dump out the database categorized by changeset and by file type.
+		It requires -n, otherwise it is not possible to get separated results.
 
 	-r pat	Only generate statistics for changes to files whose 
-	   	name matches the given regular expression.
+		name matches the given regular expression.
 
 	-s	Ignore Signed-off-by lines which match the author of 
 		each patch.
 
 	-t	Generate a report by type of contribution (code, documentation, etc.).
-	    It requires -n, otherwise this option is ignored silently.
-
+		It requires -n, otherwise this option is ignored silently.
 
 	-u 	Group all unknown developers under the "(Unknown)"
- 	        employer. 
+		employer.
 
-    -x file  Export raw statistics as CSV.
+	-x file	Export raw statistics as CSV.
 
-    -w  Aggregate the data by weeks instead of months in the
-        CSV file when -x is used.
+	-w	Aggregate the data by weeks instead of months in the
+		CSV file when -x is used.
 
 	-z 	Dump out the hacker database to "database.dump".
 
-A typical command line used to generate the "who write 2.6.x" LWN articles
+A typical command line used to generate the "who wrote 2.6.x" LWN articles
 looks like:
 
     git log -p -M v2.6.19..v2.6.20 | \

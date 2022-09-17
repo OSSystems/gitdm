@@ -41,7 +41,7 @@ class LogPatchSplitter:
     def __iter__(self):
         return self
 
-    def next(self):
+    def __next__(self):
         patch = self.__grab_patch__()
         if not patch:
             raise StopIteration
@@ -57,8 +57,7 @@ class LogPatchSplitter:
         line = self.buffer or self.fd.readline()
 
         while line:
-            m = patterns['commit'].match(line)
-            if m:
+            if line.startswith('commit '):
                 patch = [line]
                 break
             line = self.fd.readline()
@@ -69,8 +68,7 @@ class LogPatchSplitter:
         line = self.fd.readline()
         while line:
             # If this line starts a new commit, drop out.
-            m = patterns['commit'].match(line)
-            if m:
+            if line.startswith ('commit '):
                 self.buffer = line
                 break
 
@@ -85,6 +83,6 @@ if __name__ == '__main__':
     patches = LogPatchSplitter(sys.stdin)
 
     for patch in patches:
-        print '---------- NEW PATCH ----------'
+        print('---------- NEW PATCH ----------')
         for line in patch:
-            print line,
+            print(line, end = '')

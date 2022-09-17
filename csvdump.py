@@ -50,7 +50,7 @@ def store_patch(patch):
         ChangeSets.append([patch.commit, str(patch.date),
                            patch.email, domain, author, employer,
                            patch.added, patch.removed])
-        for (filetype, (added, removed)) in patch.filetypes.iteritems():
+        for (filetype, (added, removed)) in patch.filetypes.items():
             FileTypes.append([patch.commit, filetype, added, removed])
 
 
@@ -89,4 +89,26 @@ def OutputCSV (file):
         writer.writerow ([author_name, stat.email, empl_name, stat.date,
                           stat.added, stat.removed, stat.changesets])
 
-__all__ = [  'AccumulatePatch', 'OutputCSV', 'store_patch' ]
+def OutputHackersCSV (file, hlist):
+    if file is None:
+        return
+    file.write ("Name,Last affiliation,Activity Start,Activity End,Commits,Changed Lines,Lines Removed,Signoffs,Reviews,Test Credits,Test Credits Given,Report Credits,Report Credits Given\n")
+    for hacker in hlist:
+        if len(hacker.patches) > 0:
+            file.write ("\"%s\",%s,%s,%s,%d,%d,%d,%d,%d,%d,%d,%d,%d\n" %
+                        (hacker.name,
+                         hacker.emailemployer (None, hacker.activity_end).name,
+                         hacker.activity_start, hacker.activity_end,
+                         len(hacker.patches),
+                         hacker.changed, hacker.removed,
+                         len(hacker.signoffs),
+                         len(hacker.reviews),
+                         len(hacker.tested),
+                         hacker.testcred,
+                         len(hacker.reports),
+                         hacker.repcred))
+
+__all__ = [  'AccumulatePatch', 'OutputCSV', 'OutputHackersCSV', 'store_patch' ]
+
+
+

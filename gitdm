@@ -1,4 +1,4 @@
-#!/usr/bin/pypy
+#!/usr/bin/python3
 #-*- coding:utf-8 -*-
 #
 
@@ -15,8 +15,9 @@
 
 import database, csvdump, ConfigFile, reports
 import getopt, datetime
-import os, re, sys, rfc822, string, os.path
+import os, re, sys, string, os.path
 import logparser
+from email.utils import parsedate
 from patterns import patterns
 
 Today = datetime.date.today()
@@ -36,6 +37,7 @@ AuthorSOBs = 1
 FileFilter = None
 CSVFile = None
 CSVPrefix = None
+HackersCSV = None
 AkpmOverLt = 0
 DumpDB = 0
 CFName = 'gitdm.config'
@@ -57,6 +59,8 @@ FileReport = None
 # -D		Output date statistics
 # -f file	Write touched-files report to <file>
 # -h hfile	HTML output to hfile
+# -R rfile      reStructuredText output to rfile
+# -H file   Export individual developer raw data as CSV
 # -l count	Maximum length for output lists
 # -n        Use numstats instead of generated patch from git log
 # -o file	File for text output
@@ -75,8 +79,9 @@ def ParseOpts():
     global DateStats, AuthorSOBs, FileFilter, AkpmOverLt, DumpDB
     global CFName, CSVFile, CSVPrefix,DirName, Aggregate, Numstat
     global ReportByFileType, ReportUnknowns, CompanyFilter, FileReport
+    global HackersCSV
 
-    opts, rest = getopt.getopt(sys.argv[1:], 'ab:dC:c:Df:h:l:no:p:r:stUuwx:yz')
+    opts, rest = getopt.getopt(sys.argv[1:], 'ab:dC:c:Df:H:h:l:no:p:r:R:stUuwx:yz')
     for opt in opts:
         if opt[0] == '-a':
             AkpmOverLt = 1
@@ -94,6 +99,8 @@ def ParseOpts():
             FileReport = opt[1]
         elif opt[0] == '-h':
             reports.SetHTMLOutput(open(opt[1], 'w'))
+        elif opt[0] == '-H':
+            HackersCSV = open (opt[1], 'w')
         elif opt[0] == '-l':
             reports.SetMaxList(int(opt[1]))
         elif opt[0] == '-n':
@@ -103,8 +110,10 @@ def ParseOpts():
         elif opt[0] == '-p':
             CSVPrefix = opt[1]
         elif opt[0] == '-r':
-            print 'Filter on "%s"' % (opt[1])
+            print('Filter on "%s"' % (opt[1]))
             FileFilter = re.compile(opt[1])
+        elif opt[0] == '-R':
+            reports.SetrSTOutput(open(opt[1], 'w'))
         elif opt[0] == '-s':
             AuthorSOBs = 0
         elif opt[0] == '-t':
@@ -115,7 +124,7 @@ def ParseOpts():
             ReportUnknowns = True
         elif opt[0] == '-x':
             CSVFile = open(opt[1], 'w')
-            print "open output file " + opt[1] + "\n"
+            print("open output file " + opt[1] + "\n")
         elif opt [0] == '-w':
             Aggregate = 'week'
         elif opt [0] == '-y':
@@ -167,7 +176,7 @@ DateMap = { }
 
 def AddDateLines(date, lines):
     if lines > 1000000:
-        print 'Skip big patch (%d)' % lines
+        print('Skip big patch (%d)' % lines)
         return
     try:
         DateMap[date] += lines
@@ -214,7 +223,7 @@ class patch:
         self.reports.append(reporter)
 
     def addfiletype(self, filetype, added, removed):
-        if self.filetypes.has_key(filetype):
+        if filetype in self.filetypes:
             self.filetypes[filetype][self.ADDED] += added
             self.filetypes[filetype][self.REMOVED] += removed
         else:
@@ -303,6 +312,16 @@ def grabpatch(logpatch):
             p.addreporter(LookupStoreHacker(m.group(1), email))
             p.author.reportcredit(patch)
             continue
+        #
+        # Syzbot has its own special reported-by that nobody else uses,
+        # and they get somewhat tetchy if we don't recognize them anyway.
+        #
+        m = patterns['reported-by2'].match(Line)
+        if m:
+            email = database.RemapEmail(m.group(1))
+            p.addreporter(LookupStoreHacker(email, email))
+            p.author.reportcredit(patch)
+            continue
         # Reported-and-tested-by:
         m = patterns['reported-and-tested-by'].match(Line)
         if m:
@@ -325,7 +344,7 @@ def grabpatch(logpatch):
         #
         m = patterns['date'].match(Line)
         if m:
-            dt = rfc822.parsedate(m.group(2))
+            dt = parsedate(m.group(2))
             p.date = datetime.date(dt[0], dt[1], dt[2])
             if p.date > Today:
                 sys.stderr.write('Funky date: %s\n' % p.date)
@@ -384,7 +403,7 @@ def GripeAboutAuthorName(name):
     if name in GripedAuthorNames:
         return
     GripedAuthorNames.append(name)
-    print '%s is an author name, probably not what you want' % (name)
+    print('%s is an author name, probably not what you want' % (name))
 
 def ApplyFileFilter(line, ignore):
     #
@@ -441,7 +460,7 @@ ParseOpts()
 # Read the config files.
 #
 ConfigFile.ConfigFile(CFName, DirName)
-
+database.CheckAliases()
 #
 # Let's pre-seed the database with a couple of hackers
 # we want to remember.
@@ -451,20 +470,22 @@ if AkpmOverLt == 1:
          LookupStoreHacker('Linus Torvalds', 'torvalds@linux-foundation.org'))
     Akpm = ('akpm@linux-foundation.org',
         LookupStoreHacker('Andrew Morton', 'akpm@linux-foundation.org'))
+    LookupStoreHacker('Syzbot', 'syzkaller@googlegroups.com') # XXX
 
 TotalChanged = TotalAdded = TotalRemoved = 0
 
 #
 # Snarf changesets.
 #
-print >> sys.stderr, 'Grabbing changesets...\r',
+print('Grabbing changesets...\r', file=sys.stderr, end='')
 
 patches = logparser.LogPatchSplitter(sys.stdin)
 printcount = CSCount = 0
 
 for logpatch in patches:
     if (printcount % 50) == 0:
-        print >> sys.stderr, 'Grabbing changesets...%d\r' % printcount,
+        print('Grabbing changesets...%d\r' % printcount, file = sys.stderr,
+              end = '')
     printcount += 1
 
     # We want to ignore commits on svn tags since in Subversion
@@ -523,7 +544,7 @@ for logpatch in patches:
         CSCount += 1
     csvdump.AccumulatePatch(p, Aggregate)
     csvdump.store_patch(p)
-print >> sys.stderr, 'Grabbing changesets...done       '
+print('Grabbing changesets...done       ', file = sys.stderr)
 
 if DumpDB:
     database.DumpDB()
@@ -550,6 +571,10 @@ if TotalChanged == 0:
     TotalChanged = 1 # HACK to avoid div by zero
 if DateStats:
     PrintDateStats()
+
+if HackersCSV:
+    csvdump.OutputHackersCSV (HackersCSV, hlist);
+    HackersCSV.close ()
 
 if CSVPrefix:
     csvdump.save_csv(CSVPrefix)

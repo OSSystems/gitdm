@@ -18,7 +18,7 @@ import re
 # expressions." Now they have two problems.
 #    -- Jamie Zawinski
 #
-_pemail = r'\s+"?([^<]+)"?\s<([^>]+)>' # just email addr + name
+_pemail = r'\s+"?([^<]+)"?\s*<([^>]+)>' # just email addr + name
 
 patterns = {
     'tagcommit': re.compile (r'^commit ([\da-f]+) .*tag: (v[23]\.\d(\.\d\d?)?)'),
@@ -32,16 +32,18 @@ patterns = {
     # filea, fileb are used only in 'parche mode' (-p)
     'filea': re.compile (r'^---\s+(.*)$'),
     'fileb': re.compile (r'^\+\+\+\s+(.*)$'),
-    'acked-by': re.compile (r'^\s+Acked-by:' + _pemail+ '.*$'),
-    'reviewed-by': re.compile (r'^\s+Reviewed-by:' + _pemail+ '.*$'),
+    'acked-by': re.compile (r'^\s+Acked-by:' + _pemail+ '.*$', re.I),
+    'reviewed-by': re.compile (r'^\s+Reviewed-by:' + _pemail+ '.*$', re.I),
     'tested-by': re.compile (r'^\s+tested-by:' + _pemail + '.*$', re.I),
-    'reported-by': re.compile (r'^\s+Reported-by:' + _pemail + '.*$'),
+    'reported-by': re.compile (r'^\s+Reported-by:' + _pemail + '.*$', re.I),
+    # Syzbot-style reported-by
+    'reported-by2': re.compile (r'^\s+Reported-by:\s+(.+@.+)\s*$', re.I),
     'reported-and-tested-by': re.compile (r'^\s+reported-and-tested-by:' + _pemail + '.*$', re.I),
     #
     # Merges are described with a variety of lines.
     #
-    'ExtMerge': re.compile(r'^ +Merge( (branch|branches|tag|tags) .* of)? ([^ ]+:[^ ]+)( into .*)?\n$'),
-    'IntMerge': re.compile(r'^ +(Merge|Pull) .* into .*$'),
+    'ExtMerge': re.compile(r'^ +Merge( (branch|branches|tag|tags) .* of)? ([^ ]+:[^ ]+)( into .*)?$'),
+    'IntMerge': re.compile(r'(Merge|Pull) .* into .*$'),
     # PIntMerge2 = re.compile(r"^ +Merge branch(es)? '.*$"),
     'IntMerge2': re.compile(r"^ +Merge .*$"),
     # Another way to get the statistics (per file).
