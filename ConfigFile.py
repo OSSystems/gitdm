@@ -81,6 +81,10 @@ EMMpat = re.compile(r'^([^\s]+)\s+([^<]+)\s*(<\s*(\d+-\d+-\d+)\s*)?$')
 def ReadEmailEmployers(name):
     try:
         file = open(name, 'r')
+        # We need to avoid decoding errors during the parsing and
+        # using "surrogateescape" allow for encoding methods to
+        # restore the byte if need.
+        file.reconfigure(errors="surrogateescape")
     except IOError:
         croak('Unable to open email/employer file %s' % (name))
     line = ReadConfigLine(file)
