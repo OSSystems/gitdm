@@ -38,6 +38,11 @@ class LogPatchSplitter:
         self.buffer = None
         self.patch = []
 
+        # We need to avoid decoding errors during the parsing of
+        # patches and using "surrogateescape" allow for encoding
+        # methods to restore the byte if need.
+        self.fd.reconfigure(errors="surrogateescape")
+
     def __iter__(self):
         return self
 
